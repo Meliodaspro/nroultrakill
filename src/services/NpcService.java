@@ -47,10 +47,10 @@ public class NpcService {
             player.iDMark.setIndexMenu(indexMenu);
             msg = new Message(32);
             msg.writer().writeShort(npcTempId);
-            msg.writer().writeUTF(npcSay);
+            msg.writer().writeUTF(npcSay != null ? npcSay : "");
             msg.writer().writeByte(menuSelect.length);
             for (String menu : menuSelect) {
-                msg.writer().writeUTF(menu);
+                msg.writer().writeUTF(menu != null ? menu : "");
             }
             if (avatar != -1) {
                 msg.writer().writeShort(avatar);

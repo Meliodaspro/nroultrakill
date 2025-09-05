@@ -93,10 +93,12 @@ public class ShenronEvent {
 
     public void showConfirmShenron(byte select) {
         this.select = select;
-        String wish = null;
+        String wish = "Đồng Ý";
         switch (player.iDMark.getShenronType()) {
             case 0:
-                wish = SHENRON_WISHES[select];
+                if (select >= 0 && select < SHENRON_WISHES.length) {
+                    wish = SHENRON_WISHES[select];
+                }
                 break;
         }
         NpcService.gI().createMenuRongThieng(player, ConstNpc.SHENRON_EVENT_CONFIRM, "Ngươi có chắc muốn ước?", wish, "Từ chối");
@@ -128,6 +130,7 @@ public class ShenronEvent {
     }
 
     public void confirmWish() {
+        Service.gI().sendThongBao(player, "Đang xử lý điều ước " + this.select + "...");
         switch (player.iDMark.getShenronType()) {
             case 0:
                 switch (this.select) {
@@ -138,6 +141,7 @@ public class ShenronEvent {
                                 if (player.pet.playerSkill.skills.get(3).skillId != -1) {
                                     player.pet.openSkill4();
                                 }
+                                Service.gI().sendThongBao(player, "Đã đổi chiêu 3, 4 cho đệ tử!");
                             } else {
                                 Service.gI().sendThongBao(player, "Ít nhất đệ tử ngươi phải có chiêu 3 chứ!");
                                 sendWhishesShenron();
@@ -153,6 +157,7 @@ public class ShenronEvent {
                         if (player.pet != null) {
                             if (SkillUtil.upSkillPet(player.pet.playerSkill.skills, 4)) {
                                 Service.gI().chatJustForMe(player, player.pet, "Cám ơn sư phụ");
+                                Service.gI().sendThongBao(player, "Đã tăng cấp skill 5 cho đệ tử!");
                             } else {
                                 Service.gI().sendThongBao(player, "Skill đã đạt cấp tối đa hoặc đệ ngươi chưa có skill 5.");
                                 sendWhishesShenron();
@@ -181,6 +186,7 @@ public class ShenronEvent {
                         player.nPoint.setMp(Util.maxIntValue( player.nPoint.mpMax));
                         Service.gI().point(player);
                         Service.gI().Send_Info_NV(player);
+                        Service.gI().sendThongBao(player, "Đã tăng 10% HP, KI, SD trong 30 phút!");
                         break;
                     case 3: //quần đang đeo lên 1 cấp
                         Item item = this.player.inventory.itemsBody.get(1);
@@ -205,6 +211,7 @@ public class ShenronEvent {
                                     }
                                 }
                                 InventoryService.gI().sendItemBody(player);
+                                Service.gI().sendThongBao(player, "Đã tăng cấp quần đang mang!");
                             } else {
                                 Service.gI().sendThongBao(player, "Quần của ngươi đã đạt cấp tối đa");
                                 sendWhishesShenron();
@@ -218,6 +225,7 @@ public class ShenronEvent {
                 }
                 break;
         }
+        Service.gI().sendThongBao(player, "Điều ước đã được thực hiện thành công!");
         shenronLeave();
     }
 

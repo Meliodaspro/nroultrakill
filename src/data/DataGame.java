@@ -48,7 +48,7 @@ public class DataGame {
     public static int vsRes = 4;
     public static short maxSmallVersion = 32767;
 
-    public static String LINK_IP_PORT = "NRO Ultrakill:local.ducvuvip.pro:1998:0";
+    public static String LINK_IP_PORT = "NRO Ultrakill:nroultrakill.online:1998:0";
     public static Map MAP_MOUNT_NUM = new HashMap();
 
     public static void sendVersionGame(MySession session) {

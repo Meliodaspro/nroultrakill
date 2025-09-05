@@ -91,10 +91,12 @@ public class Command {
                 return true;
             } else if (text.startsWith("sp")) {
                 try {
-                    long power = Long.parseLong(text.replaceAll("up", ""));
+                    long power = Long.parseLong(text.replaceAll("sp", ""));
                     Service.gI().addSMTN(player, (byte) 2, power, false);
+                    Service.gI().sendThongBao(player, "Đã tăng " + power + " sức mạnh!");
                     return true;
                 } catch (Exception e) {
+                    Service.gI().sendThongBao(player, "Lỗi lệnh sp: " + e.getMessage());
                 }
             } else if (text.equals("battu")) {
                 if (player.isBattu) {
@@ -106,10 +108,16 @@ public class Command {
                 return true;
             } else if (text.startsWith("dt")) {
                 try {
-                    long power = Long.parseLong(text.replaceAll("upp", ""));
+                    if (player.pet == null) {
+                        Service.gI().sendThongBao(player, "Bạn chưa có đệ tử!");
+                        return true;
+                    }
+                    long power = Long.parseLong(text.replaceAll("dt", ""));
                     Service.gI().addSMTN(player.pet, (byte) 2, power, false);
+                    Service.gI().sendThongBao(player, "Đã tăng " + power + " sức mạnh cho đệ tử!");
                     return true;
                 } catch (Exception e) {
+                    Service.gI().sendThongBao(player, "Lỗi lệnh dt: " + e.getMessage());
                 }
             } else if (text.equals("test")) {
                 switch (player.gender) {
@@ -149,7 +157,7 @@ public class Command {
                 return true;
             } else if (text.equals("daucatmoi")) {
                 for (int i = 0; i < 10; i++) {
-                    ServerNotify.gI().notify("BOSS Nro vừa xuất hiện tại nhà anh ấy");
+                    ServerNotify.gI().notify("BOSS ADMIN vừa xuất hiện tại nhà anh ấy");
                 }
                 return true;
             } else if (text.startsWith("m ")) {
