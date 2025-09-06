@@ -79,6 +79,16 @@ public class MySession extends Session {
         ipAddress = socket.getInetAddress().getHostAddress();
     }
 
+    // Method để admin xóa AntiLogin
+    public static void clearAntiLogin() {
+        ANTILOGIN.clear();
+    }
+
+    // Method để lấy số lượng IP bị khóa
+    public static int getAntiLoginCount() {
+        return ANTILOGIN.size();
+    }
+
     @Override
     public void sendKey() throws Exception {
         super.sendKey();
