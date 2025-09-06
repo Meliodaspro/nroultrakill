@@ -41,7 +41,10 @@ public class EventManager {
     }
 
     public void init() {
+        // Luôn khởi tạo Default event
         new Default().init();
+        
+        // Khởi tạo các sự kiện theo mùa
         if (LUNNAR_NEW_YEAR) {
             new LunarNewYear().init();
         }
@@ -63,5 +66,12 @@ public class EventManager {
         if (TOP_UP) {
             new TopUp().init();
         }
+    }
+
+    // Method để khởi tạo lại sự kiện (dùng cho admin panel)
+    public void reinit() {
+        System.out.println("Đang khởi tạo lại sự kiện...");
+        init();
+        System.out.println("Khởi tạo lại sự kiện hoàn tất!");
     }
 }

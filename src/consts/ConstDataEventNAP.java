@@ -47,15 +47,15 @@ public class ConstDataEventNAP {//Zalo: 0358124452//Name: EMTI
 
     public static boolean initsukien = false;
 
- public static final byte MONTH_OPEN = 2;
-    public static final byte DATE_OPEN = 15;
-    public static final byte HOUR_OPEN = 9;
-    public static final byte MIN_OPEN = 00;
+ public static byte MONTH_OPEN = 2;
+    public static byte DATE_OPEN = 15;
+    public static byte HOUR_OPEN = 9;
+    public static byte MIN_OPEN = 00;
 
-    public static final byte MONTH_END = 2;
-    public static final byte DATE_END = 27;
-    public static final byte HOUR_END = 00;
-    public static final byte MIN_END = 00;
+    public static byte MONTH_END = 2;
+    public static byte DATE_END = 27;
+    public static byte HOUR_END = 00;
+    public static byte MIN_END = 00;
 
     public static boolean isActiveEvent() {
         if (!initsukien) {
@@ -142,5 +142,26 @@ public class ConstDataEventNAP {//Zalo: 0358124452//Name: EMTI
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+    
+    // Method để cập nhật thời gian sự kiện từ admin panel
+    public static void updateEventTime(int startMonth, int startDay, int startHour, int startMin,
+                                     int endMonth, int endDay, int endHour, int endMin) {
+        MONTH_OPEN = (byte) startMonth;
+        DATE_OPEN = (byte) startDay;
+        HOUR_OPEN = (byte) startHour;
+        MIN_OPEN = (byte) startMin;
+        
+        MONTH_END = (byte) endMonth;
+        DATE_END = (byte) endDay;
+        HOUR_END = (byte) endHour;
+        MIN_END = (byte) endMin;
+        
+        // Reset flag để khởi tạo lại thời gian
+        initsukien = false;
+        
+        System.out.println("Đã cập nhật thời gian sự kiện nạp thẻ:");
+        System.out.println("Bắt đầu: " + startDay + "/" + startMonth + "/2025 " + startHour + ":" + String.format("%02d", startMin));
+        System.out.println("Kết thúc: " + endDay + "/" + endMonth + "/2025 " + endHour + ":" + String.format("%02d", endMin));
     }
 }
