@@ -34,6 +34,16 @@ public class TopService {
         }
         return instance;
     }
+    
+    // Method để format số tiền theo kiểu VND
+    private static String formatVND(String amount) {
+        try {
+            long value = Long.parseLong(amount);
+            return String.format("%,d", value);
+        } catch (NumberFormatException e) {
+            return amount; // Trả về nguyên gốc nếu không parse được
+        }
+    }
 
     public void updateTop() {
         if (Manager.timeRealTop + (10 * 60 * 1000) < System.currentTimeMillis()) {
@@ -133,7 +143,9 @@ public class TopService {
             rs = ps.executeQuery();
             byte i = 1;
             while (rs.next()) {
-                sb.append(i).append(".").append(rs.getString("name")).append(": ").append(rs.getString("danap")).append(" Đã Nạp\b");
+                String danap = rs.getString("danap");
+                String formattedDanap = formatVND(danap);
+                sb.append(i).append(".").append(rs.getString("name")).append(": ").append(formattedDanap).append(" Đã Nạp\n");
                 i++;
             }
             conn.close();
@@ -156,7 +168,9 @@ public class TopService {
             rs = ps.executeQuery();
             byte i = 1;
             while (rs.next()) {
-                sb.append(i).append(".").append(rs.getString("name")).append(": ").append(rs.getString("sm")).append(" Sức Mạnh\b");
+                String sm = rs.getString("sm");
+                String formattedSM = formatVND(sm);
+                sb.append(i).append(".").append(rs.getString("name")).append(": ").append(formattedSM).append(" Sức Mạnh\n");
                 i++;
             }
             conn.close();
@@ -180,7 +194,9 @@ public class TopService {
             while (rs.next()) {
                 int id = rs.getInt("accountId");
                 String username = rs.getString("name");
-                sb.append(i).append(".").append(id).append("-").append(username).append(": sở hữu ").append(rs.getString("thoi_vang")).append(" ").append(ItemService.gI().getTemplate(consts.ConstTranhNgocNamek.ITEM_TRANH_NGOC).name).append("\b");
+                String thoiVang = rs.getString("thoi_vang");
+                String formattedThoiVang = formatVND(thoiVang);
+                sb.append(i).append(".").append(id).append("-").append(username).append(": sở hữu ").append(formattedThoiVang).append(" ").append(ItemService.gI().getTemplate(consts.ConstTranhNgocNamek.ITEM_TRANH_NGOC).name).append("\n");
                 i++;
             }
 
