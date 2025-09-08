@@ -63,8 +63,15 @@ public class ServerManagerUI extends JFrame {
         // Hiển thị trạng thái server
         JOptionPane.showMessageDialog(this, "Server đang chạy");
         
-        // Khởi động server
-        ServerManager.gI().run();
+        // Khởi động server trong thread riêng để tránh lag panel
+        new Thread(() -> {
+            try {
+                ServerManager.gI().run();
+            } catch (Exception e) {
+                Logger.error("Lỗi khởi động server: " + e.getMessage());
+                e.printStackTrace();
+            }
+        }, "ServerStartupThread").start();
     }
     
     // Panel thông tin server
@@ -119,9 +126,21 @@ public class ServerManagerUI extends JFrame {
                     int dialogButton = JOptionPane.YES_NO_OPTION;
                     int dialogResult = JOptionPane.showConfirmDialog(this, "Bắt đầu bảo trì sau " + seconds + " giây?", "Bảo trì", dialogButton);
                     if (dialogResult == 0) {
-                        Logger.error("Server tiến hành bảo trì sau " + seconds + " giây");
-                        Maintenance.gI().start(seconds);
-                        JOptionPane.showMessageDialog(this, "Bảo trì đã được lên lịch trong " + seconds + " giây");
+                        // Chạy bảo trì trong thread riêng để tránh lag panel
+                        new Thread(() -> {
+                            try {
+                                Logger.error("Server tiến hành bảo trì sau " + seconds + " giây");
+                                Maintenance.gI().start(seconds);
+                                SwingUtilities.invokeLater(() -> {
+                                    JOptionPane.showMessageDialog(this, "Bảo trì đã được lên lịch trong " + seconds + " giây");
+                                });
+                            } catch (Exception ex) {
+                                Logger.error("Lỗi thực hiện bảo trì: " + ex.getMessage());
+                                SwingUtilities.invokeLater(() -> {
+                                    JOptionPane.showMessageDialog(this, "Lỗi thực hiện bảo trì: " + ex.getMessage());
+                                });
+                            }
+                        }, "ImmediateMaintenanceThread").start();
                     } else {
                         System.out.println("No Option");
                     }
@@ -229,54 +248,71 @@ public class ServerManagerUI extends JFrame {
         
         JButton saveButton = new JButton("Lưu Data");
         saveButton.addActionListener(e -> {
-            Logger.success("Đang tiến hành lưu data");
-            network.server.EMTIServer.gI().stopConnect();
+            // Chạy trong thread riêng để tránh lag panel
+            new Thread(() -> {
+                try {
+                    Logger.success("Đang tiến hành lưu data");
+                    network.server.EMTIServer.gI().stopConnect();
 
-            Maintenance.isRunning = false;
-            try {
-                Logger.error("Đang tiến hành lưu data bang hội");
-                services.ClanService.gI().close();
-                Thread.sleep(1000);
-                Logger.success("Lưu dữ liệu bang hội thành công");
-            } catch (Exception ex) {
-                ex.printStackTrace();
-                Logger.error("Lỗi lưu dữ liệu bang hội");
-            }
-            try {
-                Logger.error("Đang tiến hành lưu data ký gửi");
-                models.Consign.ConsignShopManager.gI().save();
-                Thread.sleep(1000);
-                Logger.success("Lưu dữ liệu ký gửi thành công");
-            } catch (Exception ex) {
-                ex.printStackTrace();
-                Logger.error("Lỗi lưu dữ liệu ký gửi");
-            }
+                    Maintenance.isRunning = false;
+                    try {
+                        Logger.error("Đang tiến hành lưu data bang hội");
+                        services.ClanService.gI().close();
+                        Thread.sleep(1000);
+                        Logger.success("Lưu dữ liệu bang hội thành công");
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                        Logger.error("Lỗi lưu dữ liệu bang hội");
+                    }
+                    try {
+                        Logger.error("Đang tiến hành lưu data ký gửi");
+                        models.Consign.ConsignShopManager.gI().save();
+                        Thread.sleep(1000);
+                        Logger.success("Lưu dữ liệu ký gửi thành công");
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                        Logger.error("Lỗi lưu dữ liệu ký gửi");
+                    }
 
-            try {
-                Logger.error("Đang tiến hành đẩy người chơi");
-                server.Client.gI().close();
-                jdbc.daos.EventDAO.save();
-                Thread.sleep(1000);
-                Logger.success("Lưu dữ liệu người dùng thành công");
-            } catch (Exception ex) {
-                ex.printStackTrace();
-                Logger.error("Lỗi lưu dữ liệu người dùng");
-            }
-            System.exit(0);
+                    try {
+                        Logger.error("Đang tiến hành đẩy người chơi");
+                        server.Client.gI().close();
+                        jdbc.daos.EventDAO.save();
+                        Thread.sleep(1000);
+                        Logger.success("Lưu dữ liệu người dùng thành công");
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                        Logger.error("Lỗi lưu dữ liệu người dùng");
+                    }
+                    System.exit(0);
+                } catch (Exception ex) {
+                    Logger.error("Lỗi trong quá trình lưu data: " + ex.getMessage());
+                    ex.printStackTrace();
+                }
+            }, "SaveDataThread").start();
         });
         
         JButton clearFwButton = new JButton("Clear Firewall");
         clearFwButton.addActionListener(e -> {
-            try {
-                int count = server.io.MySession.getAntiLoginCount();
-                server.io.MySession.clearAntiLogin();
-                JOptionPane.showMessageDialog(this, 
-                    "Đã xóa " + count + " bản ghi anti-login thành công!");
-                utils.Logger.success("Admin đã xóa " + count + " bản ghi anti-login");
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Lỗi khi xóa anti-login: " + ex.getMessage());
-                utils.Logger.error("Lỗi khi xóa anti-login: " + ex.getMessage());
-            }
+            // Chạy trong thread riêng để tránh lag panel
+            new Thread(() -> {
+                try {
+                    int count = server.io.MySession.getAntiLoginCount();
+                    server.io.MySession.clearAntiLogin();
+                    utils.Logger.success("Admin đã xóa " + count + " bản ghi anti-login");
+                    
+                    // Cập nhật UI trong EDT thread
+                    SwingUtilities.invokeLater(() -> {
+                        JOptionPane.showMessageDialog(this, 
+                            "Đã xóa " + count + " bản ghi anti-login thành công!");
+                    });
+                } catch (Exception ex) {
+                    utils.Logger.error("Lỗi khi xóa anti-login: " + ex.getMessage());
+                    SwingUtilities.invokeLater(() -> {
+                        JOptionPane.showMessageDialog(this, "Lỗi khi xóa anti-login: " + ex.getMessage());
+                    });
+                }
+            }, "ClearFirewallThread").start();
         });
         
         otherPanel.add(saveButton);
@@ -387,20 +423,33 @@ public class ServerManagerUI extends JFrame {
         JButton applyButton = new JButton("Áp dụng thay đổi");
         applyButton.setAlignmentX(JButton.CENTER_ALIGNMENT);
         applyButton.addActionListener(e -> {
-            // Cập nhật trạng thái sự kiện
-            event.EventManager.TRUNG_THU = trungThuCheck.isSelected();
-            event.EventManager.CHRISTMAS = christmasCheck.isSelected();
-            event.EventManager.HALLOWEEN = halloweenCheck.isSelected();
-            event.EventManager.HUNG_VUONG = hungVuongCheck.isSelected();
-            event.EventManager.LUNNAR_NEW_YEAR = lunarNewYearCheck.isSelected();
-            event.EventManager.INTERNATIONAL_WOMANS_DAY = internationalWomensDayCheck.isSelected();
-            event.EventManager.TOP_UP = topUpCheck.isSelected();
-            
-            // Reinit sự kiện
-            event.EventManager.gI().reinit();
-            
-            JOptionPane.showMessageDialog(eventDialog, "Đã cập nhật trạng thái sự kiện thành công!");
-            eventDialog.dispose();
+            // Chạy trong thread riêng để tránh lag panel
+            new Thread(() -> {
+                try {
+                    // Cập nhật trạng thái sự kiện
+                    event.EventManager.TRUNG_THU = trungThuCheck.isSelected();
+                    event.EventManager.CHRISTMAS = christmasCheck.isSelected();
+                    event.EventManager.HALLOWEEN = halloweenCheck.isSelected();
+                    event.EventManager.HUNG_VUONG = hungVuongCheck.isSelected();
+                    event.EventManager.LUNNAR_NEW_YEAR = lunarNewYearCheck.isSelected();
+                    event.EventManager.INTERNATIONAL_WOMANS_DAY = internationalWomensDayCheck.isSelected();
+                    event.EventManager.TOP_UP = topUpCheck.isSelected();
+                    
+                    // Reinit sự kiện
+                    event.EventManager.gI().reinit();
+                    
+                    // Cập nhật UI trong EDT thread
+                    SwingUtilities.invokeLater(() -> {
+                        JOptionPane.showMessageDialog(eventDialog, "Đã cập nhật trạng thái sự kiện thành công!");
+                        eventDialog.dispose();
+                    });
+                } catch (Exception ex) {
+                    Logger.error("Lỗi cập nhật sự kiện: " + ex.getMessage());
+                    SwingUtilities.invokeLater(() -> {
+                        JOptionPane.showMessageDialog(eventDialog, "Lỗi cập nhật sự kiện: " + ex.getMessage());
+                    });
+                }
+            }, "EventUpdateThread").start();
         });
         
         // Nút đóng
@@ -501,48 +550,62 @@ public class ServerManagerUI extends JFrame {
         JButton applyButton = new JButton("Áp dụng thay đổi");
         applyButton.setAlignmentX(JButton.CENTER_ALIGNMENT);
         applyButton.addActionListener(e -> {
-            try {
-                int startMonth = Integer.parseInt(startMonthField.getText());
-                int startDay = Integer.parseInt(startDayField.getText());
-                int startHour = Integer.parseInt(startHourField.getText());
-                int startMin = Integer.parseInt(startMinField.getText());
-                
-                int endMonth = Integer.parseInt(endMonthField.getText());
-                int endDay = Integer.parseInt(endDayField.getText());
-                int endHour = Integer.parseInt(endHourField.getText());
-                int endMin = Integer.parseInt(endMinField.getText());
-                
-                // Validate input
-                if (startMonth < 1 || startMonth > 12 || endMonth < 1 || endMonth > 12 ||
-                    startDay < 1 || startDay > 31 || endDay < 1 || endDay > 31 ||
-                    startHour < 0 || startHour > 23 || endHour < 0 || endHour > 23 ||
-                    startMin < 0 || startMin > 59 || endMin < 0 || endMin > 59) {
-                    JOptionPane.showMessageDialog(timeDialog, "Vui lòng nhập thời gian hợp lệ!");
-                    return;
+            // Chạy trong thread riêng để tránh lag panel
+            new Thread(() -> {
+                try {
+                    int startMonth = Integer.parseInt(startMonthField.getText());
+                    int startDay = Integer.parseInt(startDayField.getText());
+                    int startHour = Integer.parseInt(startHourField.getText());
+                    int startMin = Integer.parseInt(startMinField.getText());
+                    
+                    int endMonth = Integer.parseInt(endMonthField.getText());
+                    int endDay = Integer.parseInt(endDayField.getText());
+                    int endHour = Integer.parseInt(endHourField.getText());
+                    int endMin = Integer.parseInt(endMinField.getText());
+                    
+                    // Validate input
+                    if (startMonth < 1 || startMonth > 12 || endMonth < 1 || endMonth > 12 ||
+                        startDay < 1 || startDay > 31 || endDay < 1 || endDay > 31 ||
+                        startHour < 0 || startHour > 23 || endHour < 0 || endHour > 23 ||
+                        startMin < 0 || startMin > 59 || endMin < 0 || endMin > 59) {
+                        SwingUtilities.invokeLater(() -> {
+                            JOptionPane.showMessageDialog(timeDialog, "Vui lòng nhập thời gian hợp lệ!");
+                        });
+                        return;
+                    }
+                    
+                    // Cập nhật thời gian trong ConstDataEventNAP
+                    updateTopUpEventTime(startMonth, startDay, startHour, startMin,
+                                       endMonth, endDay, endHour, endMin);
+                    
+                    Logger.success("Admin đã cập nhật thời gian sự kiện nạp thẻ: " +
+                        "Bắt đầu " + startDay + "/" + startMonth + "/2025 " + startHour + ":" + 
+                        String.format("%02d", startMin) + " - " +
+                        "Kết thúc " + endDay + "/" + endMonth + "/2025 " + endHour + ":" + 
+                        String.format("%02d", endMin));
+                    
+                    // Cập nhật UI trong EDT thread
+                    SwingUtilities.invokeLater(() -> {
+                        JOptionPane.showMessageDialog(timeDialog, 
+                            "Đã cập nhật thời gian sự kiện nạp thẻ thành công!\n" +
+                            "Bắt đầu: " + startDay + "/" + startMonth + "/2025 " + startHour + ":" + 
+                            String.format("%02d", startMin) + "\n" +
+                            "Kết thúc: " + endDay + "/" + endMonth + "/2025 " + endHour + ":" + 
+                            String.format("%02d", endMin));
+                        timeDialog.dispose();
+                    });
+                    
+                } catch (NumberFormatException ex) {
+                    SwingUtilities.invokeLater(() -> {
+                        JOptionPane.showMessageDialog(timeDialog, "Vui lòng nhập số hợp lệ!");
+                    });
+                } catch (Exception ex) {
+                    Logger.error("Lỗi cập nhật thời gian sự kiện nạp thẻ: " + ex.getMessage());
+                    SwingUtilities.invokeLater(() -> {
+                        JOptionPane.showMessageDialog(timeDialog, "Lỗi cập nhật: " + ex.getMessage());
+                    });
                 }
-                
-                // Cập nhật thời gian trong ConstDataEventNAP
-                updateTopUpEventTime(startMonth, startDay, startHour, startMin,
-                                   endMonth, endDay, endHour, endMin);
-                
-                JOptionPane.showMessageDialog(timeDialog, 
-                    "Đã cập nhật thời gian sự kiện nạp thẻ thành công!\n" +
-                    "Bắt đầu: " + startDay + "/" + startMonth + "/2025 " + startHour + ":" + 
-                    String.format("%02d", startMin) + "\n" +
-                    "Kết thúc: " + endDay + "/" + endMonth + "/2025 " + endHour + ":" + 
-                    String.format("%02d", endMin));
-                
-                Logger.success("Admin đã cập nhật thời gian sự kiện nạp thẻ: " +
-                    "Bắt đầu " + startDay + "/" + startMonth + "/2025 " + startHour + ":" + 
-                    String.format("%02d", startMin) + " - " +
-                    "Kết thúc " + endDay + "/" + endMonth + "/2025 " + endHour + ":" + 
-                    String.format("%02d", endMin));
-                
-                timeDialog.dispose();
-                
-            } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(timeDialog, "Vui lòng nhập số hợp lệ!");
-            }
+            }, "TopUpEventUpdateThread").start();
         });
         
         // Nút đóng
@@ -700,48 +763,62 @@ public class ServerManagerUI extends JFrame {
         JButton applyButton = new JButton("Áp dụng thay đổi");
         applyButton.setAlignmentX(JButton.CENTER_ALIGNMENT);
         applyButton.addActionListener(e -> {
-            try {
-                int startMonth = Integer.parseInt(startMonthField.getText());
-                int startDay = Integer.parseInt(startDayField.getText());
-                int startHour = Integer.parseInt(startHourField.getText());
-                int startMin = Integer.parseInt(startMinField.getText());
-                
-                int endMonth = Integer.parseInt(endMonthField.getText());
-                int endDay = Integer.parseInt(endDayField.getText());
-                int endHour = Integer.parseInt(endHourField.getText());
-                int endMin = Integer.parseInt(endMinField.getText());
-                
-                // Validate input
-                if (startMonth < 1 || startMonth > 12 || endMonth < 1 || endMonth > 12 ||
-                    startDay < 1 || startDay > 31 || endDay < 1 || endDay > 31 ||
-                    startHour < 0 || startHour > 23 || endHour < 0 || endHour > 23 ||
-                    startMin < 0 || startMin > 59 || endMin < 0 || endMin > 59) {
-                    JOptionPane.showMessageDialog(timeDialog, "Vui lòng nhập thời gian hợp lệ!");
-                    return;
+            // Chạy trong thread riêng để tránh lag panel
+            new Thread(() -> {
+                try {
+                    int startMonth = Integer.parseInt(startMonthField.getText());
+                    int startDay = Integer.parseInt(startDayField.getText());
+                    int startHour = Integer.parseInt(startHourField.getText());
+                    int startMin = Integer.parseInt(startMinField.getText());
+                    
+                    int endMonth = Integer.parseInt(endMonthField.getText());
+                    int endDay = Integer.parseInt(endDayField.getText());
+                    int endHour = Integer.parseInt(endHourField.getText());
+                    int endMin = Integer.parseInt(endMinField.getText());
+                    
+                    // Validate input
+                    if (startMonth < 1 || startMonth > 12 || endMonth < 1 || endMonth > 12 ||
+                        startDay < 1 || startDay > 31 || endDay < 1 || endDay > 31 ||
+                        startHour < 0 || startHour > 23 || endHour < 0 || endHour > 23 ||
+                        startMin < 0 || startMin > 59 || endMin < 0 || endMin > 59) {
+                        SwingUtilities.invokeLater(() -> {
+                            JOptionPane.showMessageDialog(timeDialog, "Vui lòng nhập thời gian hợp lệ!");
+                        });
+                        return;
+                    }
+                    
+                    // Cập nhật thời gian trong ConstDataEventSM
+                    updateTopSMEventTime(startMonth, startDay, startHour, startMin,
+                                       endMonth, endDay, endHour, endMin);
+                    
+                    Logger.success("Admin đã cập nhật thời gian sự kiện top sức mạnh: " +
+                        "Bắt đầu " + startDay + "/" + startMonth + "/2025 " + startHour + ":" + 
+                        String.format("%02d", startMin) + " - " +
+                        "Kết thúc " + endDay + "/" + endMonth + "/2025 " + endHour + ":" + 
+                        String.format("%02d", endMin));
+                    
+                    // Cập nhật UI trong EDT thread
+                    SwingUtilities.invokeLater(() -> {
+                        JOptionPane.showMessageDialog(timeDialog, 
+                            "Đã cập nhật thời gian sự kiện top sức mạnh thành công!\n" +
+                            "Bắt đầu: " + startDay + "/" + startMonth + "/2025 " + startHour + ":" + 
+                            String.format("%02d", startMin) + "\n" +
+                            "Kết thúc: " + endDay + "/" + endMonth + "/2025 " + endHour + ":" + 
+                            String.format("%02d", endMin));
+                        timeDialog.dispose();
+                    });
+                    
+                } catch (NumberFormatException ex) {
+                    SwingUtilities.invokeLater(() -> {
+                        JOptionPane.showMessageDialog(timeDialog, "Vui lòng nhập số hợp lệ!");
+                    });
+                } catch (Exception ex) {
+                    Logger.error("Lỗi cập nhật thời gian sự kiện top sức mạnh: " + ex.getMessage());
+                    SwingUtilities.invokeLater(() -> {
+                        JOptionPane.showMessageDialog(timeDialog, "Lỗi cập nhật: " + ex.getMessage());
+                    });
                 }
-                
-                // Cập nhật thời gian trong ConstDataEventSM
-                updateTopSMEventTime(startMonth, startDay, startHour, startMin,
-                                   endMonth, endDay, endHour, endMin);
-                
-                JOptionPane.showMessageDialog(timeDialog, 
-                    "Đã cập nhật thời gian sự kiện top sức mạnh thành công!\n" +
-                    "Bắt đầu: " + startDay + "/" + startMonth + "/2025 " + startHour + ":" + 
-                    String.format("%02d", startMin) + "\n" +
-                    "Kết thúc: " + endDay + "/" + endMonth + "/2025 " + endHour + ":" + 
-                    String.format("%02d", endMin));
-                
-                Logger.success("Admin đã cập nhật thời gian sự kiện top sức mạnh: " +
-                    "Bắt đầu " + startDay + "/" + startMonth + "/2025 " + startHour + ":" + 
-                    String.format("%02d", startMin) + " - " +
-                    "Kết thúc " + endDay + "/" + endMonth + "/2025 " + endHour + ":" + 
-                    String.format("%02d", endMin));
-                
-                timeDialog.dispose();
-                
-            } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(timeDialog, "Vui lòng nhập số hợp lệ!");
-            }
+            }, "TopSMEventUpdateThread").start();
         });
         
         // Nút đóng
@@ -852,15 +929,23 @@ public class ServerManagerUI extends JFrame {
                     int seconds_now = currentTime.getSecond();
 
                     if (hourss == hour_now && minutess == minute_now && secondss == seconds_now) {
-                        performMaintenance();
+                        // Chạy bảo trì trong thread riêng
+                        new Thread(() -> {
+                            try {
+                                performMaintenance();
+                            } catch (Exception ex) {
+                                Logger.error("Lỗi thực hiện bảo trì: " + ex.getMessage());
+                            }
+                        }, "MaintenanceThread").start();
                         timeReached.set(true);
                     }
                     Thread.sleep(10000);
                 } catch (Exception e) {
+                    Logger.error("Lỗi trong thread hẹn giờ bảo trì: " + e.getMessage());
                     e.printStackTrace();
                 }
             }
-        }).start();
+        }, "ScheduleMaintenanceThread").start();
     }
     
     private void performMaintenance() {

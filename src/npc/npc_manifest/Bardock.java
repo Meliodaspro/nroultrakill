@@ -33,8 +33,6 @@ public class Bardock extends Npc {
                                 "\b|1|Đây là nơi ngươi có thể đổi bất cứ thứ gì"
                                 + "\nMiễn là ngươi có tiền"
                                 + "\b\n|3| Nạp VND giá trị ( cứ 20k được <20.000 VND> và <20.000 VND> trong game)"
-                                + "\b|5|BIDV " + cn.SDT + " \n"
-                                + "|1|Nội dung chuyển khoản: " + cn.MANAP + "" + player.getSession().userId + "\n"
                                 + "\b|3|Lưu ý: Chỉ giao dịch nạp tiền qua duy nhất qua admin\n"
                                 + "mọi rủi ro tự chịu nếu không chấp hành."
                                 + "\n\b|7|Bạn đang có :" + player.getSession().cash + " VND\n|4|"
@@ -72,7 +70,7 @@ public class Bardock extends Npc {
                         }
                         break;
                     case 1:
-                        NpcService.gI().createBigMessage(player, avartar, "Nhớ đăng nhập xong sau đó bấm NẠP!!!", (byte) 1, "NẠP", "https://nroultrakill.online/");
+                        NpcService.gI().createBigMessage(player, avartar, "Nhớ đăng nhập xong sau đó bấm NẠP!!!", (byte) 1, "NẠP", "https://nroultrakill.online/napthe");
                         break;
                     case 3:
                         if (player.getSession() != null) {                            this.createOtherMenu(player, 13000,
@@ -98,7 +96,7 @@ public class Bardock extends Npc {
                     case 2:
                         if (player.getSession() != null) {
                             this.createOtherMenu(player, 782,
-                                    "\b|2|Mở thành viên free khi bạn nạp từ 1k  \n \b|7|Bạn đã nạp :"
+                                    "\b|2|Mở thành viên free khi bạn nạp từ 10k  \n \b|7|Bạn đã nạp :"
                                     + "" + player.getSession().cash + " đồng\n|4|"
                                     ,
                                     "Mở", "Đóng");
@@ -334,8 +332,8 @@ public class Bardock extends Npc {
 //                            Service.gI().sendThongBao(player, "Bạn đã mở thành viên rồi");
 //                            return;
 //                        }
-                        if (player.getSession() != null && player.getSession().danap < 1000) {
-                            NpcService.gI().createBigMessage(player, avartar, "Bạn chưa nạp 1K, bạn có muốn nạp để mở thành viên không ?!!!", (byte) 1, "NẠP", "http://nroultrakill.online/");
+                        if (player.getSession() != null && player.getSession().danap < 10000) {
+                            NpcService.gI().createBigMessage(player, avartar, "Bạn chưa nạp 10K, bạn có muốn nạp để mở thành viên không ?!!!", (byte) 1, "NẠP", "http://nroultrakill.online/napthe");
                             return;
                         }
                         if (PlayerDAO.updateActive(player, 1)) {
