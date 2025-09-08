@@ -14,6 +14,7 @@ import boss.SnakeWayManager;
 import boss.TreasureUnderSeaManager;
 import boss.TrungThuEventManager;
 import consts.ConstNpc;
+import data.DataGame;
 import item.Item;
 
 import java.util.List;
@@ -88,6 +89,10 @@ public class Command {
                 return true;
             } else if (text.equals("hsk")) {
                 Service.gI().releaseCooldownSkill(player);
+                return true;
+            } else if (text.equals("reloaddata")) {
+                DataGame.reloadVersions();
+                Service.gI().sendThongBao(player, "Đã reload data versions từ config!");
                 return true;
             } else if (text.startsWith("sp")) {
                 try {

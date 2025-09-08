@@ -29,11 +29,15 @@ public class ServerManagerUI extends JFrame {
     private JLabel uptimeLabel;
     private long serverStartTime;
     private ScheduledExecutorService scheduler;
+    // Labels thông tin dưới các nhóm chức năng
+    private JLabel napEventInfoLabel;
+    private JLabel smEventInfoLabel;
+    private JLabel activeEventsLabel;
 
     public ServerManagerUI() {
         setTitle("Chương trình Bảo trì ULTRAKILL SV1");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(600, 500);
+        setSize(900, 650);
         setLocationRelativeTo(null);
 
         // Khởi tạo thời gian bắt đầu server
@@ -46,13 +50,23 @@ public class ServerManagerUI extends JFrame {
         JPanel topPanel = createTopPanel();
         add(topPanel, BorderLayout.NORTH);
         
-        // Panel chức năng chính ở giữa
-        JPanel centerPanel = createCenterPanel();
-        add(centerPanel, BorderLayout.CENTER);
+        // Tạo tabbed pane cho các chức năng
+        JTabbedPane tabbedPane = new JTabbedPane();
+        tabbedPane.setFont(new Font("Arial", Font.BOLD, 14));
         
-        // Panel thống kê ở dưới
-        JPanel bottomPanel = createBottomPanel();
-        add(bottomPanel, BorderLayout.SOUTH);
+        // Tab 1: Quản lý Server
+        tabbedPane.addTab("Quản lý Server", createServerManagementTab());
+        
+        // Tab 2: Cấu hình
+        tabbedPane.addTab("Cấu hình", createConfigTab());
+        
+        // Tab 3: Sự kiện
+        tabbedPane.addTab("Sự kiện", createEventTab());
+        
+        // Tab 4: Thống kê
+        tabbedPane.addTab("Thống kê", createStatsPanel());
+
+        add(tabbedPane, BorderLayout.CENTER);
 
         // Khởi tạo ScheduledExecutorService để cập nhật uptime
         scheduler = Executors.newScheduledThreadPool(1);
@@ -107,10 +121,10 @@ public class ServerManagerUI extends JFrame {
         return panel;
     }
     
-    // Panel chức năng chính
-    private JPanel createCenterPanel() {
-        JPanel panel = new JPanel(new GridLayout(3, 2, 10, 10));
-        panel.setBorder(BorderFactory.createTitledBorder("Chức năng chính"));
+    // Tab Quản lý Server
+    private JPanel createServerManagementTab() {
+        JPanel panel = new JPanel(new GridLayout(2, 2, 10, 10));
+        panel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
         
         // Bảo trì
         JPanel maintenancePanel = new JPanel(new FlowLayout());
@@ -119,6 +133,8 @@ public class ServerManagerUI extends JFrame {
         JLabel label1 = new JLabel("Giây:");
         minutesField = new JTextField("15", 5);
         JButton maintenanceButton = new JButton("Bảo trì ngay");
+        maintenanceButton.setPreferredSize(new Dimension(100, 35));
+        maintenanceButton.setFont(new Font("Arial", Font.PLAIN, 11));
         maintenanceButton.addActionListener(e -> {
             try {
                 int seconds = Integer.parseInt(minutesField.getText());
@@ -210,6 +226,8 @@ public class ServerManagerUI extends JFrame {
         schedulePanel.add(secondsComboBox);
         
         JButton scheduleButton = new JButton("Hẹn giờ");
+        scheduleButton.setPreferredSize(new Dimension(100, 35));
+        scheduleButton.setFont(new Font("Arial", Font.PLAIN, 11));
         scheduleButton.addActionListener(e -> scheduleMaintenance(hoursComboBox, minutesComboBox, secondsComboBox));
         schedulePanel.add(scheduleButton);
         
@@ -218,35 +236,14 @@ public class ServerManagerUI extends JFrame {
             scheduleMaintenance(hoursComboBox, minutesComboBox, secondsComboBox);
         }
         
-        // Quản lý sự kiện
-        JPanel eventPanel = new JPanel(new FlowLayout());
-        eventPanel.setBorder(BorderFactory.createTitledBorder("Sự kiện"));
-        
-        JButton eventButton = new JButton("Quản lý Sự kiện");
-        eventButton.addActionListener(e -> showEventManagerDialog());
-        eventPanel.add(eventButton);
-        
-        // Thời gian sự kiện nạp thẻ
-        JPanel timeEventPanel = new JPanel(new FlowLayout());
-        timeEventPanel.setBorder(BorderFactory.createTitledBorder("Sự kiện Nạp thẻ"));
-        
-        JButton timeEventButton = new JButton("Thời gian Nạp thẻ");
-        timeEventButton.addActionListener(e -> showTimeEventDialog());
-        timeEventPanel.add(timeEventButton);
-        
-        // Thời gian sự kiện top sức mạnh
-        JPanel timeSMPanel = new JPanel(new FlowLayout());
-        timeSMPanel.setBorder(BorderFactory.createTitledBorder("Sự kiện Top SM"));
-        
-        JButton timeSMButton = new JButton("Thời gian Top SM");
-        timeSMButton.addActionListener(e -> showTimeSMDialog());
-        timeSMPanel.add(timeSMButton);
         
         // Chức năng khác
         JPanel otherPanel = new JPanel(new FlowLayout());
         otherPanel.setBorder(BorderFactory.createTitledBorder("Chức năng khác"));
         
         JButton saveButton = new JButton("Lưu Data");
+        saveButton.setPreferredSize(new Dimension(100, 35));
+        saveButton.setFont(new Font("Arial", Font.PLAIN, 11));
         saveButton.addActionListener(e -> {
             // Chạy trong thread riêng để tránh lag panel
             new Thread(() -> {
@@ -318,30 +315,620 @@ public class ServerManagerUI extends JFrame {
         otherPanel.add(saveButton);
         otherPanel.add(clearFwButton);
         
+        // Panel cấu hình server
+        JPanel serverConfigPanel = createServerConfigPanel();
+        
+        // Panel quản lý data versions
+        JPanel dataVersionPanel = createDataVersionPanel();
+        
         // Thêm các panel vào layout
         panel.add(maintenancePanel);
         panel.add(schedulePanel);
-        panel.add(eventPanel);
-        panel.add(timeEventPanel);
-        panel.add(timeSMPanel);
         panel.add(otherPanel);
         
         return panel;
     }
     
+    // Tab Cấu hình
+    private JPanel createConfigTab() {
+        JPanel panel = new JPanel(new GridLayout(1, 2, 15, 15));
+        panel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
+        
+        // Panel cấu hình server
+        JPanel serverConfigPanel = createServerConfigPanel();
+        serverConfigPanel.setBorder(BorderFactory.createTitledBorder("Cấu hình Server"));
+        
+        // Panel data versions
+        JPanel dataVersionPanel = createDataVersionPanel();
+        dataVersionPanel.setBorder(BorderFactory.createTitledBorder("Quản lý Data Versions"));
+        
+        panel.add(serverConfigPanel);
+        panel.add(dataVersionPanel);
+        
+        return panel;
+    }
+    
+    // Tab Sự kiện
+    private JPanel createEventTab() {
+        JPanel panel = new JPanel(new GridLayout(2, 2, 10, 10));
+        panel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
+        
+        // Sự kiện
+        JPanel eventPanel = new JPanel(new FlowLayout());
+        eventPanel.setBorder(BorderFactory.createTitledBorder("Sự kiện"));
+        JButton eventButton = new JButton("Quản lý Sự kiện");
+        eventButton.setPreferredSize(new Dimension(120, 35));
+        eventButton.setFont(new Font("Arial", Font.PLAIN, 11));
+        eventButton.addActionListener(e -> {
+            showEventManagerDialog();
+            updateActiveEventsLabel();
+        });
+        eventPanel.add(eventButton);
+        activeEventsLabel = new JLabel();
+        updateActiveEventsLabel();
+        eventPanel.add(activeEventsLabel);
+        
+        // Sự kiện Nạp thẻ
+        JPanel napEventPanel = new JPanel(new FlowLayout());
+        napEventPanel.setBorder(BorderFactory.createTitledBorder("Sự kiện Nạp thẻ"));
+        JButton napEventButton = new JButton("Thời gian Nạp thẻ");
+        napEventButton.setPreferredSize(new Dimension(120, 35));
+        napEventButton.setFont(new Font("Arial", Font.PLAIN, 11));
+        napEventInfoLabel = new JLabel();
+        updateNapEventInfoLabel(napEventInfoLabel);
+        napEventButton.addActionListener(e -> {
+            showTimeEventDialog();
+            // cập nhật lại thông tin ngay sau khi cấu hình thay đổi
+            updateNapEventInfoLabel(napEventInfoLabel);
+        });
+        napEventPanel.add(napEventButton);
+        napEventPanel.add(napEventInfoLabel);
+        
+        // Sự kiện Top SM
+        JPanel smEventPanel = new JPanel(new FlowLayout());
+        smEventPanel.setBorder(BorderFactory.createTitledBorder("Sự kiện Top SM"));
+        JButton smEventButton = new JButton("Thời gian Top SM");
+        smEventButton.setPreferredSize(new Dimension(120, 35));
+        smEventButton.setFont(new Font("Arial", Font.PLAIN, 11));
+        smEventInfoLabel = new JLabel();
+        updateSMEventInfoLabel(smEventInfoLabel);
+        smEventButton.addActionListener(e -> {
+            showTimeSMDialog();
+            // cập nhật lại thông tin ngay sau khi cấu hình thay đổi
+            updateSMEventInfoLabel(smEventInfoLabel);
+        });
+        smEventPanel.add(smEventButton);
+        smEventPanel.add(smEventInfoLabel);
+        
+        // Chức năng khác
+        JPanel otherPanel = new JPanel(new FlowLayout());
+        otherPanel.setBorder(BorderFactory.createTitledBorder("Chức năng khác"));
+        JButton saveDataButton = new JButton("Lưu Data");
+        saveDataButton.setPreferredSize(new Dimension(100, 35));
+        saveDataButton.setFont(new Font("Arial", Font.PLAIN, 11));
+        JLabel otherInfoLabel = new JLabel("Chưa thực hiện");
+        saveDataButton.addActionListener(e -> {
+            // TODO: Implement save data
+            JOptionPane.showMessageDialog(this, "Chức năng lưu data đang được phát triển!");
+            otherInfoLabel.setText("Đã lưu dữ liệu lúc: " + java.time.LocalTime.now().withNano(0));
+        });
+        JButton clearFirewallButton = new JButton("Clear Firewall");
+        clearFirewallButton.setPreferredSize(new Dimension(100, 35));
+        clearFirewallButton.setFont(new Font("Arial", Font.PLAIN, 11));
+        clearFirewallButton.addActionListener(e -> {
+            // TODO: Implement clear firewall
+            JOptionPane.showMessageDialog(this, "Chức năng clear firewall đang được phát triển!");
+            otherInfoLabel.setText("Đã clear firewall lúc: " + java.time.LocalTime.now().withNano(0));
+        });
+        otherPanel.add(saveDataButton);
+        otherPanel.add(clearFirewallButton);
+        otherPanel.add(otherInfoLabel);
+        
+        panel.add(eventPanel);
+        panel.add(napEventPanel);
+        panel.add(smEventPanel);
+        panel.add(otherPanel);
+        
+        return panel;
+    }
+
+    // Cập nhật label thông tin Nạp thẻ
+    private void updateNapEventInfoLabel(JLabel label) {
+        try {
+            java.util.Properties props = new java.util.Properties();
+            try (java.io.FileInputStream fis = new java.io.FileInputStream("data/config/config.properties")) {
+                props.load(fis);
+            }
+            String start = String.format("%s/%s %s:%s",
+                    props.getProperty("nap_event.start_day", "15"),
+                    props.getProperty("nap_event.start_month", "3"),
+                    props.getProperty("nap_event.start_hour", "9"),
+                    props.getProperty("nap_event.start_min", "0"));
+            String end = String.format("%s/%s %s:%s",
+                    props.getProperty("nap_event.end_day", "31"),
+                    props.getProperty("nap_event.end_month", "9"),
+                    props.getProperty("nap_event.end_hour", "23"),
+                    props.getProperty("nap_event.end_min", "59"));
+            label.setText("Từ " + start + " đến " + end);
+        } catch (Exception ex) {
+            label.setText("Không đọc được cấu hình nạp thẻ");
+        }
+    }
+
+    // Cập nhật label thông tin Top SM
+    private void updateSMEventInfoLabel(JLabel label) {
+        try {
+            java.util.Properties props = new java.util.Properties();
+            try (java.io.FileInputStream fis = new java.io.FileInputStream("data/config/config.properties")) {
+                props.load(fis);
+            }
+            String start = String.format("%s/%s %s:%s",
+                    props.getProperty("sm_event.start_day", "12"),
+                    props.getProperty("sm_event.start_month", "3"),
+                    props.getProperty("sm_event.start_hour", "4"),
+                    props.getProperty("sm_event.start_min", "0"));
+            String end = String.format("%s/%s %s:%s",
+                    props.getProperty("sm_event.end_day", "2"),
+                    props.getProperty("sm_event.end_month", "12"),
+                    props.getProperty("sm_event.end_hour", "12"),
+                    props.getProperty("sm_event.end_min", "12"));
+            label.setText("Từ " + start + " đến " + end);
+        } catch (Exception ex) {
+            label.setText("Không đọc được cấu hình Top SM");
+        }
+    }
+
+    // Hiển thị danh sách sự kiện đang kích hoạt dựa trên các cờ trong EventManager
+    private void updateActiveEventsLabel() {
+        try {
+            StringBuilder sb = new StringBuilder("Đang chạy: ");
+            boolean any = false;
+            if (event.EventManager.LUNNAR_NEW_YEAR) { sb.append("Tết, "); any = true; }
+            if (event.EventManager.INTERNATIONAL_WOMANS_DAY) { sb.append("QPTG, "); any = true; }
+            if (event.EventManager.CHRISTMAS) { sb.append("Noel, "); any = true; }
+            if (event.EventManager.HALLOWEEN) { sb.append("Halloween, "); any = true; }
+            if (event.EventManager.HUNG_VUONG) { sb.append("Hùng Vương, "); any = true; }
+            if (event.EventManager.TRUNG_THU) { sb.append("Trung Thu, "); any = true; }
+            if (event.EventManager.TOP_UP) { sb.append("Nạp thẻ, "); any = true; }
+            if (!any) {
+                activeEventsLabel.setText("Đang chạy: Không có sự kiện");
+                return;
+            }
+            // bỏ dấu phẩy cuối
+            String text = sb.toString();
+            if (text.endsWith(", ")) text = text.substring(0, text.length()-2);
+            activeEventsLabel.setText(text);
+        } catch (Exception ex) {
+            if (activeEventsLabel != null) activeEventsLabel.setText("Không thể đọc trạng thái sự kiện");
+        }
+    }
+    
+    // Panel cấu hình server
+    private JPanel createServerConfigPanel() {
+        JPanel panel = new JPanel(new GridLayout(2, 2, 5, 5));
+        panel.setBorder(BorderFactory.createTitledBorder("Cấu hình Server"));
+        
+        // Load giá trị hiện tại từ config
+        String currentExp = loadConfigValue("server.expserver", "3");
+        String currentWait = loadConfigValue("server.waitlogin", "5");
+        String currentMaxPlayer = loadConfigValue("server.maxplayer", "10000");
+        String currentMaxPerIp = loadConfigValue("server.maxperip", "10000");
+        
+        // Exp Server
+        JPanel expPanel = new JPanel(new FlowLayout());
+        expPanel.setBorder(BorderFactory.createTitledBorder("Exp Server"));
+        JLabel expLabel = new JLabel("Exp:");
+        JTextField expField = new JTextField(currentExp, 5);
+        JButton expButton = new JButton("Cập nhật");
+        expButton.setPreferredSize(new Dimension(80, 30));
+        expButton.setFont(new Font("Arial", Font.PLAIN, 10));
+        expButton.addActionListener(e -> {
+            try {
+                int exp = Integer.parseInt(expField.getText());
+                if (exp > 0) {
+                    updateServerConfig("server.expserver", String.valueOf(exp));
+                    JOptionPane.showMessageDialog(this, "Đã cập nhật exp server: " + exp);
+                } else {
+                    JOptionPane.showMessageDialog(this, "Exp phải lớn hơn 0");
+                }
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(this, "Vui lòng nhập số hợp lệ");
+            }
+        });
+        expPanel.add(expLabel);
+        expPanel.add(expField);
+        expPanel.add(expButton);
+        
+        // Wait Login
+        JPanel waitPanel = new JPanel(new FlowLayout());
+        waitPanel.setBorder(BorderFactory.createTitledBorder("Wait Login"));
+        JLabel waitLabel = new JLabel("Giây:");
+        JTextField waitField = new JTextField(currentWait, 5);
+        JButton waitButton = new JButton("Cập nhật");
+        waitButton.setPreferredSize(new Dimension(80, 30));
+        waitButton.setFont(new Font("Arial", Font.PLAIN, 10));
+        waitButton.addActionListener(e -> {
+            try {
+                int wait = Integer.parseInt(waitField.getText());
+                if (wait > 0) {
+                    updateServerConfig("server.waitlogin", String.valueOf(wait));
+                    JOptionPane.showMessageDialog(this, "Đã cập nhật wait login: " + wait + " giây");
+                } else {
+                    JOptionPane.showMessageDialog(this, "Wait login phải lớn hơn 0");
+                }
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(this, "Vui lòng nhập số hợp lệ");
+            }
+        });
+        waitPanel.add(waitLabel);
+        waitPanel.add(waitField);
+        waitPanel.add(waitButton);
+        
+        // Max Player
+        JPanel maxPlayerPanel = new JPanel(new FlowLayout());
+        maxPlayerPanel.setBorder(BorderFactory.createTitledBorder("Max Player"));
+        JLabel maxPlayerLabel = new JLabel("Số:");
+        JTextField maxPlayerField = new JTextField(currentMaxPlayer, 5);
+        JButton maxPlayerButton = new JButton("Cập nhật");
+        maxPlayerButton.setPreferredSize(new Dimension(80, 30));
+        maxPlayerButton.setFont(new Font("Arial", Font.PLAIN, 10));
+        maxPlayerButton.addActionListener(e -> {
+            try {
+                int maxPlayer = Integer.parseInt(maxPlayerField.getText());
+                if (maxPlayer > 0) {
+                    updateServerConfig("server.maxplayer", String.valueOf(maxPlayer));
+                    JOptionPane.showMessageDialog(this, "Đã cập nhật max player: " + maxPlayer);
+                } else {
+                    JOptionPane.showMessageDialog(this, "Max player phải lớn hơn 0");
+                }
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(this, "Vui lòng nhập số hợp lệ");
+            }
+        });
+        maxPlayerPanel.add(maxPlayerLabel);
+        maxPlayerPanel.add(maxPlayerField);
+        maxPlayerPanel.add(maxPlayerButton);
+        
+        // Max Per IP
+        JPanel maxPerIpPanel = new JPanel(new FlowLayout());
+        maxPerIpPanel.setBorder(BorderFactory.createTitledBorder("Max Per IP"));
+        JLabel maxPerIpLabel = new JLabel("Số:");
+        JTextField maxPerIpField = new JTextField(currentMaxPerIp, 5);
+        JButton maxPerIpButton = new JButton("Cập nhật");
+        maxPerIpButton.setPreferredSize(new Dimension(80, 30));
+        maxPerIpButton.setFont(new Font("Arial", Font.PLAIN, 10));
+        maxPerIpButton.addActionListener(e -> {
+            try {
+                int maxPerIp = Integer.parseInt(maxPerIpField.getText());
+                if (maxPerIp > 0) {
+                    updateServerConfig("server.maxperip", String.valueOf(maxPerIp));
+                    JOptionPane.showMessageDialog(this, "Đã cập nhật max per IP: " + maxPerIp);
+                } else {
+                    JOptionPane.showMessageDialog(this, "Max per IP phải lớn hơn 0");
+                }
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(this, "Vui lòng nhập số hợp lệ");
+            }
+        });
+        maxPerIpPanel.add(maxPerIpLabel);
+        maxPerIpPanel.add(maxPerIpField);
+        maxPerIpPanel.add(maxPerIpButton);
+        
+        panel.add(expPanel);
+        panel.add(waitPanel);
+        panel.add(maxPlayerPanel);
+        panel.add(maxPerIpPanel);
+        
+        return panel;
+    }
+    
+    // Panel quản lý data versions
+    private JPanel createDataVersionPanel() {
+        JPanel panel = new JPanel(new GridLayout(2, 1, 5, 5));
+        panel.setBorder(BorderFactory.createTitledBorder("Data Versions"));
+        
+        // Load giá trị hiện tại từ config (lấy version đầu tiên làm mẫu)
+        String currentVersion = loadConfigValue("data.version.data", "1");
+        
+        // Panel cập nhật tất cả versions
+        JPanel updatePanel = new JPanel(new FlowLayout());
+        updatePanel.setBorder(BorderFactory.createTitledBorder("Cập nhật tất cả Data Versions"));
+        
+        JLabel versionLabel = new JLabel("Version mới:");
+        JTextField versionField = new JTextField(currentVersion, 5);
+        JButton updateButton = new JButton("Cập nhật tất cả");
+        updateButton.setPreferredSize(new Dimension(120, 35));
+        updateButton.setFont(new Font("Arial", Font.PLAIN, 11));
+        
+        updateButton.addActionListener(e -> {
+            try {
+                int version = Integer.parseInt(versionField.getText());
+                if (version > 0) {
+                    // Cập nhật tất cả data versions cùng lúc
+                    updateAllDataVersions(version);
+                    JOptionPane.showMessageDialog(this, 
+                        "Đã cập nhật tất cả data versions lên: " + version + "\n" +
+                        "- Data Version: " + version + "\n" +
+                        "- Map Version: " + version + "\n" +
+                        "- Skill Version: " + version + "\n" +
+                        "- Item Version: " + version + "\n" +
+                        "- Res Version: " + version);
+                } else {
+                    JOptionPane.showMessageDialog(this, "Version phải lớn hơn 0");
+                }
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(this, "Vui lòng nhập số hợp lệ");
+            }
+        });
+        
+        updatePanel.add(versionLabel);
+        updatePanel.add(versionField);
+        updatePanel.add(updateButton);
+        
+        // Panel reload data
+        JPanel reloadPanel = new JPanel(new FlowLayout());
+        reloadPanel.setBorder(BorderFactory.createTitledBorder("Reload Data"));
+        
+        JButton reloadButton = new JButton("Reload All Data");
+        reloadButton.setPreferredSize(new Dimension(120, 35));
+        reloadButton.setFont(new Font("Arial", Font.PLAIN, 11));
+        reloadButton.addActionListener(e -> {
+            int dialogButton = JOptionPane.YES_NO_OPTION;
+            int dialogResult = JOptionPane.showConfirmDialog(this, 
+                "Bạn có chắc muốn reload tất cả data versions?\n" +
+                "Điều này sẽ khiến client tự động reload data.", 
+                "Reload Data", dialogButton);
+            if (dialogResult == 0) {
+                // Gọi method reload data từ DataGame
+                try {
+                    Class<?> dataGameClass = Class.forName("data.DataGame");
+                    java.lang.reflect.Method reloadMethod = dataGameClass.getMethod("reloadVersions");
+                    reloadMethod.invoke(null);
+                    JOptionPane.showMessageDialog(this, "Đã reload tất cả data versions!");
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(this, "Lỗi reload data: " + ex.getMessage());
+                }
+            }
+        });
+        
+        reloadPanel.add(reloadButton);
+        
+        panel.add(updatePanel);
+        panel.add(reloadPanel);
+        
+        return panel;
+    }
+    
+    // Method để cập nhật tất cả data versions
+    private void updateAllDataVersions(int version) {
+        try {
+            java.util.Properties props = new java.util.Properties();
+            java.io.File configFile = new java.io.File("data/config/config.properties");
+            
+            if (configFile.exists()) {
+                try (java.io.FileInputStream fis = new java.io.FileInputStream(configFile)) {
+                    props.load(fis);
+                }
+            }
+            
+            // Cập nhật tất cả data versions
+            props.setProperty("data.version.data", String.valueOf(version));
+            props.setProperty("data.version.map", String.valueOf(version));
+            props.setProperty("data.version.skill", String.valueOf(version));
+            props.setProperty("data.version.item", String.valueOf(version));
+            props.setProperty("data.version.res", String.valueOf(version));
+            
+            // Tạo nội dung config được sắp xếp theo thứ tự
+            StringBuilder configContent = new StringBuilder();
+            configContent.append("#SERVER\n");
+            configContent.append("server.local=").append(props.getProperty("server.local", "false")).append("\n");
+            configContent.append("server.test=").append(props.getProperty("server.test", "false")).append("\n");
+            configContent.append("server.daoautoupdater=").append(props.getProperty("server.daoautoupdater", "false")).append("\n");
+            configContent.append("server.sv=").append(props.getProperty("server.sv", "1")).append("\n");
+            configContent.append("server.name=").append(props.getProperty("server.name", "NRO")).append("\n");
+            configContent.append("server.port=").append(props.getProperty("server.port", "1998")).append("\n");
+            configContent.append("server.sv1=").append(props.getProperty("server.sv1", "local:127.0.0.1:1998:0,0,0")).append("\n");
+            configContent.append("server.waitlogin=").append(props.getProperty("server.waitlogin", "5")).append("\n");
+            configContent.append("server.maxperip=").append(props.getProperty("server.maxperip", "10000")).append("\n");
+            configContent.append("server.maxplayer=").append(props.getProperty("server.maxplayer", "10000")).append("\n");
+            configContent.append("server.expserver=").append(props.getProperty("server.expserver", "3")).append("\n");
+            configContent.append("server.debug=").append(props.getProperty("server.debug", "true")).append("\n");
+            configContent.append("\n");
+            
+            configContent.append("#DATABASE\n");
+            configContent.append("database.driver=").append(props.getProperty("database.driver", "com.mysql.jdbc.Driver")).append("\n");
+            configContent.append("database.host=").append(props.getProperty("database.host", "localhost")).append("\n");
+            configContent.append("database.port=").append(props.getProperty("database.port", "3306")).append("\n");
+            configContent.append("database.name=").append(props.getProperty("database.name", "nro")).append("\n");
+            configContent.append("database.user=").append(props.getProperty("database.user", "root")).append("\n");
+            configContent.append("database.pass=").append(props.getProperty("database.pass", "")).append("\n");
+            configContent.append("database.min=").append(props.getProperty("database.min", "1")).append("\n");
+            configContent.append("database.max=").append(props.getProperty("database.max", "2")).append("\n");
+            configContent.append("database.lifetime=").append(props.getProperty("database.lifetime", "120000")).append("\n");
+            configContent.append("\n");
+            
+            configContent.append("#NAP EVENT TIME SETTINGS\n");
+            configContent.append("nap_event.start_month=").append(props.getProperty("nap_event.start_month", "3")).append("\n");
+            configContent.append("nap_event.start_day=").append(props.getProperty("nap_event.start_day", "15")).append("\n");
+            configContent.append("nap_event.start_hour=").append(props.getProperty("nap_event.start_hour", "9")).append("\n");
+            configContent.append("nap_event.start_min=").append(props.getProperty("nap_event.start_min", "0")).append("\n");
+            configContent.append("nap_event.end_month=").append(props.getProperty("nap_event.end_month", "9")).append("\n");
+            configContent.append("nap_event.end_day=").append(props.getProperty("nap_event.end_day", "31")).append("\n");
+            configContent.append("nap_event.end_hour=").append(props.getProperty("nap_event.end_hour", "23")).append("\n");
+            configContent.append("nap_event.end_min=").append(props.getProperty("nap_event.end_min", "59")).append("\n");
+            configContent.append("\n");
+            
+            configContent.append("#SM EVENT TIME SETTINGS\n");
+            configContent.append("sm_event.start_month=").append(props.getProperty("sm_event.start_month", "3")).append("\n");
+            configContent.append("sm_event.start_day=").append(props.getProperty("sm_event.start_day", "12")).append("\n");
+            configContent.append("sm_event.start_hour=").append(props.getProperty("sm_event.start_hour", "4")).append("\n");
+            configContent.append("sm_event.start_min=").append(props.getProperty("sm_event.start_min", "0")).append("\n");
+            configContent.append("sm_event.end_month=").append(props.getProperty("sm_event.end_month", "12")).append("\n");
+            configContent.append("sm_event.end_day=").append(props.getProperty("sm_event.end_day", "2")).append("\n");
+            configContent.append("sm_event.end_hour=").append(props.getProperty("sm_event.end_hour", "12")).append("\n");
+            configContent.append("sm_event.end_min=").append(props.getProperty("sm_event.end_min", "12")).append("\n");
+            configContent.append("\n");
+            
+            configContent.append("#DATA RELOAD VERSIONS\n");
+            configContent.append("data.version.data=").append(version).append("\n");
+            configContent.append("data.version.map=").append(version).append("\n");
+            configContent.append("data.version.skill=").append(version).append("\n");
+            configContent.append("data.version.item=").append(version).append("\n");
+            configContent.append("data.version.res=").append(version).append("\n");
+            
+            // Ghi file với format đẹp
+            try (java.io.FileWriter writer = new java.io.FileWriter(configFile)) {
+                writer.write(configContent.toString());
+            }
+            
+            System.out.println("Đã cập nhật tất cả data versions lên: " + version);
+            
+        } catch (IOException e) {
+            System.out.println("Lỗi cập nhật data versions: " + e.getMessage());
+            JOptionPane.showMessageDialog(this, "Lỗi cập nhật data versions: " + e.getMessage());
+        }
+    }
+    
+    // Method để load giá trị từ config
+    private String loadConfigValue(String key, String defaultValue) {
+        try {
+            java.util.Properties props = new java.util.Properties();
+            java.io.File configFile = new java.io.File("data/config/config.properties");
+            
+            if (configFile.exists()) {
+                try (java.io.FileInputStream fis = new java.io.FileInputStream(configFile)) {
+                    props.load(fis);
+                    return props.getProperty(key, defaultValue);
+                }
+            }
+        } catch (IOException e) {
+           System.out.println("Lỗi đọc config: " + e.getMessage());
+        }
+        return defaultValue;
+    }
+    
+    // Method để cập nhật config với format đẹp
+    private void updateServerConfig(String key, String value) {
+        try {
+            java.util.Properties props = new java.util.Properties();
+            java.io.File configFile = new java.io.File("data/config/config.properties");
+            
+            if (configFile.exists()) {
+                try (java.io.FileInputStream fis = new java.io.FileInputStream(configFile)) {
+                    props.load(fis);
+                }
+            }
+            
+            props.setProperty(key, value);
+            
+            // Tạo nội dung config được sắp xếp theo thứ tự
+            StringBuilder configContent = new StringBuilder();
+            configContent.append("#SERVER\n");
+            configContent.append("server.local=").append(props.getProperty("server.local", "false")).append("\n");
+            configContent.append("server.test=").append(props.getProperty("server.test", "false")).append("\n");
+            configContent.append("server.daoautoupdater=").append(props.getProperty("server.daoautoupdater", "false")).append("\n");
+            configContent.append("server.sv=").append(props.getProperty("server.sv", "1")).append("\n");
+            configContent.append("server.name=").append(props.getProperty("server.name", "NRO")).append("\n");
+            configContent.append("server.port=").append(props.getProperty("server.port", "1998")).append("\n");
+            configContent.append("server.sv1=").append(props.getProperty("server.sv1", "local:127.0.0.1:1998:0,0,0")).append("\n");
+            configContent.append("server.waitlogin=").append(props.getProperty("server.waitlogin", "5")).append("\n");
+            configContent.append("server.maxperip=").append(props.getProperty("server.maxperip", "10000")).append("\n");
+            configContent.append("server.maxplayer=").append(props.getProperty("server.maxplayer", "10000")).append("\n");
+            configContent.append("server.expserver=").append(props.getProperty("server.expserver", "3")).append("\n");
+            configContent.append("server.debug=").append(props.getProperty("server.debug", "true")).append("\n");
+            configContent.append("\n");
+            
+            configContent.append("#DATABASE\n");
+            configContent.append("database.driver=").append(props.getProperty("database.driver", "com.mysql.jdbc.Driver")).append("\n");
+            configContent.append("database.host=").append(props.getProperty("database.host", "localhost")).append("\n");
+            configContent.append("database.port=").append(props.getProperty("database.port", "3306")).append("\n");
+            configContent.append("database.name=").append(props.getProperty("database.name", "nro")).append("\n");
+            configContent.append("database.user=").append(props.getProperty("database.user", "root")).append("\n");
+            configContent.append("database.pass=").append(props.getProperty("database.pass", "")).append("\n");
+            configContent.append("database.min=").append(props.getProperty("database.min", "1")).append("\n");
+            configContent.append("database.max=").append(props.getProperty("database.max", "2")).append("\n");
+            configContent.append("database.lifetime=").append(props.getProperty("database.lifetime", "120000")).append("\n");
+            configContent.append("\n");
+            
+            configContent.append("#NAP EVENT TIME SETTINGS\n");
+            configContent.append("nap_event.start_month=").append(props.getProperty("nap_event.start_month", "3")).append("\n");
+            configContent.append("nap_event.start_day=").append(props.getProperty("nap_event.start_day", "15")).append("\n");
+            configContent.append("nap_event.start_hour=").append(props.getProperty("nap_event.start_hour", "9")).append("\n");
+            configContent.append("nap_event.start_min=").append(props.getProperty("nap_event.start_min", "0")).append("\n");
+            configContent.append("nap_event.end_month=").append(props.getProperty("nap_event.end_month", "9")).append("\n");
+            configContent.append("nap_event.end_day=").append(props.getProperty("nap_event.end_day", "31")).append("\n");
+            configContent.append("nap_event.end_hour=").append(props.getProperty("nap_event.end_hour", "23")).append("\n");
+            configContent.append("nap_event.end_min=").append(props.getProperty("nap_event.end_min", "59")).append("\n");
+            configContent.append("\n");
+            
+            configContent.append("#SM EVENT TIME SETTINGS\n");
+            configContent.append("sm_event.start_month=").append(props.getProperty("sm_event.start_month", "3")).append("\n");
+            configContent.append("sm_event.start_day=").append(props.getProperty("sm_event.start_day", "12")).append("\n");
+            configContent.append("sm_event.start_hour=").append(props.getProperty("sm_event.start_hour", "4")).append("\n");
+            configContent.append("sm_event.start_min=").append(props.getProperty("sm_event.start_min", "0")).append("\n");
+            configContent.append("sm_event.end_month=").append(props.getProperty("sm_event.end_month", "12")).append("\n");
+            configContent.append("sm_event.end_day=").append(props.getProperty("sm_event.end_day", "2")).append("\n");
+            configContent.append("sm_event.end_hour=").append(props.getProperty("sm_event.end_hour", "12")).append("\n");
+            configContent.append("sm_event.end_min=").append(props.getProperty("sm_event.end_min", "12")).append("\n");
+            configContent.append("\n");
+            
+            configContent.append("#DATA RELOAD VERSIONS\n");
+            configContent.append("data.version.data=").append(props.getProperty("data.version.data", "1")).append("\n");
+            configContent.append("data.version.map=").append(props.getProperty("data.version.map", "1")).append("\n");
+            configContent.append("data.version.skill=").append(props.getProperty("data.version.skill", "1")).append("\n");
+            configContent.append("data.version.item=").append(props.getProperty("data.version.item", "1")).append("\n");
+            configContent.append("data.version.res=").append(props.getProperty("data.version.res", "1")).append("\n");
+            
+            // Ghi file với format đẹp
+            try (java.io.FileWriter writer = new java.io.FileWriter(configFile)) {
+                writer.write(configContent.toString());
+            }
+            
+            System.out.println("Đã cập nhật " + key + " = " + value);
+            
+        } catch (IOException e) {
+            System.out.println("Lỗi cập nhật config: " + e.getMessage());
+            JOptionPane.showMessageDialog(this, "Lỗi cập nhật config: " + e.getMessage());
+        }
+    }
+    
     // Panel thống kê
-    private JPanel createBottomPanel() {
-        JPanel panel = new JPanel(new GridLayout(1, 3, 10, 5));
-        panel.setBorder(BorderFactory.createTitledBorder("Thống kê"));
+    private JPanel createStatsPanel() {
+        JPanel panel = new JPanel(new GridLayout(2, 2, 10, 10));
+        panel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
         
-        JLabel sessionLabel = new JLabel("Session: 0", JLabel.CENTER);
-        panel.add(sessionLabel);
+        // Thông tin Session
+        JPanel sessionPanel = new JPanel(new FlowLayout());
+        sessionPanel.setBorder(BorderFactory.createTitledBorder("Session"));
+        JLabel sessionLabel = new JLabel("Số lượng: 0");
+        sessionLabel.setFont(new Font("Arial", Font.PLAIN, 12));
+        sessionPanel.add(sessionLabel);
         
-        JLabel memoryLabel = new JLabel("Memory: " + (Runtime.getRuntime().totalMemory() / 1024 / 1024) + "MB", JLabel.CENTER);
-        panel.add(memoryLabel);
+        // Thông tin Memory
+        JPanel memoryPanel = new JPanel(new FlowLayout());
+        memoryPanel.setBorder(BorderFactory.createTitledBorder("Memory"));
+        JLabel memoryLabel = new JLabel("Tổng: " + (Runtime.getRuntime().totalMemory() / 1024 / 1024) + "MB");
+        memoryLabel.setFont(new Font("Arial", Font.PLAIN, 12));
+        memoryPanel.add(memoryLabel);
         
-        JLabel freeMemoryLabel = new JLabel("Free: " + (Runtime.getRuntime().freeMemory() / 1024 / 1024) + "MB", JLabel.CENTER);
-        panel.add(freeMemoryLabel);
+        // Thông tin Free Memory
+        JPanel freeMemoryPanel = new JPanel(new FlowLayout());
+        freeMemoryPanel.setBorder(BorderFactory.createTitledBorder("Free Memory"));
+        JLabel freeMemoryLabel = new JLabel("Còn trống: " + (Runtime.getRuntime().freeMemory() / 1024 / 1024) + "MB");
+        freeMemoryLabel.setFont(new Font("Arial", Font.PLAIN, 12));
+        freeMemoryPanel.add(freeMemoryLabel);
+        
+        // Thông tin Thread
+        JPanel threadPanel = new JPanel(new FlowLayout());
+        threadPanel.setBorder(BorderFactory.createTitledBorder("Thread"));
+        JLabel threadLabel = new JLabel("Số lượng: " + Thread.activeCount());
+        threadLabel.setFont(new Font("Arial", Font.PLAIN, 12));
+        threadPanel.add(threadLabel);
+        
+        panel.add(sessionPanel);
+        panel.add(memoryPanel);
+        panel.add(freeMemoryPanel);
+        panel.add(threadPanel);
         
         // Cập nhật session count real-time
         ScheduledExecutorService ssCountExecutor = Executors.newSingleThreadScheduledExecutor();

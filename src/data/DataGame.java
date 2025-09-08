@@ -5,6 +5,7 @@ package data;
  *
  * @author EMTI
  */
+import consts.DataVersionManager;
 import encrypt.IconEncrypt;
 import encrypt.ImageUtil;
 import static encrypt.ImageUtil.encryptImage;
@@ -41,15 +42,29 @@ import utils.Util;
 
 public class DataGame {
 
-    public static byte vsData = 9;
-    public static byte vsMap = 2;
-    public static byte vsSkill = 1;
-    public static byte vsItem = 4;
-    public static int vsRes = 4;
+    // Sử dụng DataVersionManager để load versions từ config
+    public static byte vsData = DataVersionManager.vsData;
+    public static byte vsMap = DataVersionManager.vsMap;
+    public static byte vsSkill = DataVersionManager.vsSkill;
+    public static byte vsItem = DataVersionManager.vsItem;
+    public static int vsRes = DataVersionManager.vsRes;
     public static short maxSmallVersion = 32767;
 
     public static String LINK_IP_PORT = "NRO Ultrakill:nroultrakill.online:1998:0";
     public static Map MAP_MOUNT_NUM = new HashMap();
+    
+    /**
+     * Reload tất cả versions từ config
+     */
+    public static void reloadVersions() {
+        DataVersionManager.reloadVersionsFromConfig();
+        vsData = DataVersionManager.vsData;
+        vsMap = DataVersionManager.vsMap;
+        vsSkill = DataVersionManager.vsSkill;
+        vsItem = DataVersionManager.vsItem;
+        vsRes = DataVersionManager.vsRes;
+        System.out.println("Đã reload tất cả data versions");
+    }
 
     public static void sendVersionGame(MySession session) {
         Message msg;
