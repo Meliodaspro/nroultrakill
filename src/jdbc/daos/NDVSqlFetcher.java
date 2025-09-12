@@ -99,6 +99,8 @@ public class NDVSqlFetcher {
 //                } else
                 if (rs.getBoolean("ban")) {
                     Service.gI().sendThongBaoOK(session, "Tài khoản này đang bị khóa. Liên hệ Admin để biết thêm thông tin");
+                } else if (!rs.getBoolean("email_verified")) {
+                    Service.gI().sendThongBaoOK(session, "Email chưa được xác minh, vui lòng xác minh để bảo mật tài khoản");
                 } else if (secondsPass1 < Manager.SECOND_WAIT_LOGIN) {
                     if (secondsPass < secondsPass1) {
                         Service.gI().sendWaitToLogin(session, Manager.SECOND_WAIT_LOGIN - secondsPass);
@@ -338,13 +340,19 @@ public class NDVSqlFetcher {
                 short tempId = Short.parseShort(String.valueOf(dataItem.get(0)));
                 if (tempId != -1) {
                     item = ItemService.gI().createNewItem(tempId, Integer.parseInt(String.valueOf(dataItem.get(1))));
-                    JSONArray options = (JSONArray) JSONValue.parse(String.valueOf(dataItem.get(2)).replaceAll("\"", ""));
-                    for (int j = 0; j < options.size(); j++) {
-                        JSONArray opt = (JSONArray) JSONValue.parse(String.valueOf(options.get(j)));
-                        item.itemOptions.add(new Item.ItemOption(Integer.parseInt(String.valueOf(opt.get(0))), Integer.parseInt(String.valueOf(opt.get(1)))));
-                    }
-                    item.createTime = Long.parseLong(String.valueOf(dataItem.get(3)));
-                    if (ItemService.gI().isOutOfDateTime(item)) {
+                    if (item != null) {
+                        JSONArray options = (JSONArray) JSONValue.parse(String.valueOf(dataItem.get(2)).replaceAll("\"", ""));
+                        for (int j = 0; j < options.size(); j++) {
+                            JSONArray opt = (JSONArray) JSONValue.parse(String.valueOf(options.get(j)));
+                            item.itemOptions.add(new Item.ItemOption(Integer.parseInt(String.valueOf(opt.get(0))), Integer.parseInt(String.valueOf(opt.get(1)))));
+                        }
+                        item.createTime = Long.parseLong(String.valueOf(dataItem.get(3)));
+                        if (ItemService.gI().isOutOfDateTime(item)) {
+                            item = ItemService.gI().createItemNull();
+                        }
+                    } else {
+                        // Item ID không hợp lệ, tạo item null thay thế
+                        System.err.println("NDVSqlFetcher.loadPlayer: Invalid item ID " + tempId + " for player " + player.name + " (items_body), creating null item");
                         item = ItemService.gI().createItemNull();
                     }
                 } else {
@@ -371,13 +379,19 @@ public class NDVSqlFetcher {
                 short tempId = Short.parseShort(String.valueOf(dataItem.get(0)));
                 if (tempId != -1) {
                     item = ItemService.gI().createNewItem(tempId, Integer.parseInt(String.valueOf(dataItem.get(1))));
-                    JSONArray options = (JSONArray) JSONValue.parse(String.valueOf(dataItem.get(2)).replaceAll("\"", ""));
-                    for (int j = 0; j < options.size(); j++) {
-                        JSONArray opt = (JSONArray) JSONValue.parse(String.valueOf(options.get(j)));
-                        item.itemOptions.add(new Item.ItemOption(Integer.parseInt(String.valueOf(opt.get(0))), Integer.parseInt(String.valueOf(opt.get(1)))));
-                    }
-                    item.createTime = Long.parseLong(String.valueOf(dataItem.get(3)));
-                    if (ItemService.gI().isOutOfDateTime(item)) {
+                    if (item != null) {
+                        JSONArray options = (JSONArray) JSONValue.parse(String.valueOf(dataItem.get(2)).replaceAll("\"", ""));
+                        for (int j = 0; j < options.size(); j++) {
+                            JSONArray opt = (JSONArray) JSONValue.parse(String.valueOf(options.get(j)));
+                            item.itemOptions.add(new Item.ItemOption(Integer.parseInt(String.valueOf(opt.get(0))), Integer.parseInt(String.valueOf(opt.get(1)))));
+                        }
+                        item.createTime = Long.parseLong(String.valueOf(dataItem.get(3)));
+                        if (ItemService.gI().isOutOfDateTime(item)) {
+                            item = ItemService.gI().createItemNull();
+                        }
+                    } else {
+                        // Item ID không hợp lệ, tạo item null thay thế
+                        System.err.println("NDVSqlFetcher.loadPlayer: Invalid item ID " + tempId + " for player " + player.name + ", creating null item");
                         item = ItemService.gI().createItemNull();
                     }
                 } else {
@@ -395,27 +409,33 @@ public class NDVSqlFetcher {
                 short tempId = Short.parseShort(String.valueOf(dataItem.get(0)));
                 if (tempId != -1) {
                     item = ItemService.gI().createNewItem(tempId, Integer.parseInt(String.valueOf(dataItem.get(1))));
-                    JSONArray options = (JSONArray) JSONValue.parse(String.valueOf(dataItem.get(2)).replaceAll("\"", ""));
-                    for (int j = 0; j < options.size(); j++) {
-                        JSONArray opt = (JSONArray) JSONValue.parse(String.valueOf(options.get(j)));
-                        item.itemOptions.add(new Item.ItemOption(Integer.parseInt(String.valueOf(opt.get(0))), Integer.parseInt(String.valueOf(opt.get(1)))));
-                    }
-                    item.createTime = Long.parseLong(String.valueOf(dataItem.get(3)));
-                    if (item.template.id == 2132) {
-                        SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
-
-                        try {
-                            Date currentDate = new Date(item.createTime);
-                            Date startDate = formatter.parse("15/03/2024");
-                            Date endDate = formatter.parse("28/03/2024");
-                            if (currentDate.compareTo(startDate) >= 0 && currentDate.compareTo(endDate) <= 0) {
-                                System.out.println("Thu hồi cải trang rồng lộn bug.");
-                                item = ItemService.gI().createItemNull();
-                            }
-                        } catch (ParseException e) {
+                    if (item != null) {
+                        JSONArray options = (JSONArray) JSONValue.parse(String.valueOf(dataItem.get(2)).replaceAll("\"", ""));
+                        for (int j = 0; j < options.size(); j++) {
+                            JSONArray opt = (JSONArray) JSONValue.parse(String.valueOf(options.get(j)));
+                            item.itemOptions.add(new Item.ItemOption(Integer.parseInt(String.valueOf(opt.get(0))), Integer.parseInt(String.valueOf(opt.get(1)))));
                         }
-                    }
-                    if (ItemService.gI().isOutOfDateTime(item)) {
+                        item.createTime = Long.parseLong(String.valueOf(dataItem.get(3)));
+                        if (item.template.id == 2132) {
+                            SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
+
+                            try {
+                                Date currentDate = new Date(item.createTime);
+                                Date startDate = formatter.parse("15/03/2024");
+                                Date endDate = formatter.parse("28/03/2024");
+                                if (currentDate.compareTo(startDate) >= 0 && currentDate.compareTo(endDate) <= 0) {
+                                    System.out.println("Thu hồi cải trang rồng lộn bug.");
+                                    item = ItemService.gI().createItemNull();
+                                }
+                            } catch (ParseException e) {
+                            }
+                        }
+                        if (ItemService.gI().isOutOfDateTime(item)) {
+                            item = ItemService.gI().createItemNull();
+                        }
+                    } else {
+                        // Item ID không hợp lệ, tạo item null thay thế
+                        System.err.println("NDVSqlFetcher.loadPlayer: Invalid item ID " + tempId + " for player " + player.name + " (items_box), creating null item");
                         item = ItemService.gI().createItemNull();
                     }
                 } else {
@@ -433,12 +453,19 @@ public class NDVSqlFetcher {
                 short tempId = Short.parseShort(String.valueOf(dataItem.get(0)));
                 if (tempId != -1) {
                     item = ItemService.gI().createNewItem(tempId, Integer.parseInt(String.valueOf(dataItem.get(1))));
-                    JSONArray options = (JSONArray) JSONValue.parse(String.valueOf(dataItem.get(2)).replaceAll("\"", ""));
-                    for (int j = 0; j < options.size(); j++) {
-                        JSONArray opt = (JSONArray) JSONValue.parse(String.valueOf(options.get(j)));
-                        item.itemOptions.add(new Item.ItemOption(Integer.parseInt(String.valueOf(opt.get(0))), Integer.parseInt(String.valueOf(opt.get(1)))));
+                    if (item != null) {
+                        JSONArray options = (JSONArray) JSONValue.parse(String.valueOf(dataItem.get(2)).replaceAll("\"", ""));
+                        for (int j = 0; j < options.size(); j++) {
+                            JSONArray opt = (JSONArray) JSONValue.parse(String.valueOf(options.get(j)));
+                            item.itemOptions.add(new Item.ItemOption(Integer.parseInt(String.valueOf(opt.get(0))), Integer.parseInt(String.valueOf(opt.get(1)))));
+                        }
+                        player.inventory.itemsBoxCrackBall.add(item);
+                    } else {
+                        // Item ID không hợp lệ, tạo item null thay thế
+                        System.err.println("NDVSqlFetcher.loadPlayer: Invalid item ID " + tempId + " for player " + player.name + " (items_box_lucky_round), creating null item");
+                        item = ItemService.gI().createItemNull();
+                        player.inventory.itemsBoxCrackBall.add(item);
                     }
-                    player.inventory.itemsBoxCrackBall.add(item);
                 }
             }
             dataArray.clear();
@@ -451,12 +478,19 @@ public class NDVSqlFetcher {
                 short tempId = Short.parseShort(String.valueOf(dataItem.get(0)));
                 if (tempId != -1) {
                     item = ItemService.gI().createNewItem(tempId, Integer.parseInt(String.valueOf(dataItem.get(1))));
-                    JSONArray options = (JSONArray) JSONValue.parse(String.valueOf(dataItem.get(2)).replaceAll("\"", ""));
-                    for (int j = 0; j < options.size(); j++) {
-                        JSONArray opt = (JSONArray) JSONValue.parse(String.valueOf(options.get(j)));
-                        item.itemOptions.add(new Item.ItemOption(Integer.parseInt(String.valueOf(opt.get(0))), Integer.parseInt(String.valueOf(opt.get(1)))));
+                    if (item != null) {
+                        JSONArray options = (JSONArray) JSONValue.parse(String.valueOf(dataItem.get(2)).replaceAll("\"", ""));
+                        for (int j = 0; j < options.size(); j++) {
+                            JSONArray opt = (JSONArray) JSONValue.parse(String.valueOf(options.get(j)));
+                            item.itemOptions.add(new Item.ItemOption(Integer.parseInt(String.valueOf(opt.get(0))), Integer.parseInt(String.valueOf(opt.get(1)))));
+                        }
+                        player.inventory.itemsMailBox.add(item);
+                    } else {
+                        // Item ID không hợp lệ, tạo item null thay thế
+                        System.err.println("NDVSqlFetcher.loadPlayer: Invalid item ID " + tempId + " for player " + player.name + " (item_mails_box), creating null item");
+                        item = ItemService.gI().createItemNull();
+                        player.inventory.itemsMailBox.add(item);
                     }
-                    player.inventory.itemsMailBox.add(item);
                 }
             }
             dataArray.clear();
@@ -468,10 +502,16 @@ public class NDVSqlFetcher {
                 short tempId = Short.parseShort(String.valueOf(dataItem.get(0)));
                 if (tempId != -1) {
                     item = ItemService.gI().createNewItem(tempId, Integer.parseInt(String.valueOf(dataItem.get(1))));
-                    JSONArray options = (JSONArray) JSONValue.parse(String.valueOf(dataItem.get(2)).replaceAll("\"", ""));
-                    for (int j = 0; j < options.size(); j++) {
-                        JSONArray opt = (JSONArray) JSONValue.parse(String.valueOf(options.get(j)));
-                        item.itemOptions.add(new Item.ItemOption(Integer.parseInt(String.valueOf(opt.get(0))), Integer.parseInt(String.valueOf(opt.get(1)))));
+                    if (item != null) {
+                        JSONArray options = (JSONArray) JSONValue.parse(String.valueOf(dataItem.get(2)).replaceAll("\"", ""));
+                        for (int j = 0; j < options.size(); j++) {
+                            JSONArray opt = (JSONArray) JSONValue.parse(String.valueOf(options.get(j)));
+                            item.itemOptions.add(new Item.ItemOption(Integer.parseInt(String.valueOf(opt.get(0))), Integer.parseInt(String.valueOf(opt.get(1)))));
+                        }
+                    } else {
+                        // Item ID không hợp lệ, tạo item null thay thế
+                        System.err.println("NDVSqlFetcher.loadPlayer: Invalid item ID " + tempId + " for player " + player.name + " (items_daban), creating null item");
+                        item = ItemService.gI().createItemNull();
                     }
                     // 26/06/2023 - Giảm Ngày Trong Shop
                     item.createTime = Long.parseLong(String.valueOf(dataItem.get(3)));
@@ -819,10 +859,16 @@ public class NDVSqlFetcher {
                     short tempId = Short.parseShort(String.valueOf(dataItem.get(0)));
                     if (tempId != -1) {
                         item = ItemService.gI().createNewItem(tempId, Integer.parseInt(String.valueOf(dataItem.get(1))));
-                        JSONArray options = (JSONArray) JSONValue.parse(String.valueOf(dataItem.get(2)).replaceAll("\"", ""));
-                        for (int j = 0; j < options.size(); j++) {
-                            JSONArray opt = (JSONArray) JSONValue.parse(String.valueOf(options.get(j)));
-                            item.itemOptions.add(new Item.ItemOption(Integer.parseInt(String.valueOf(opt.get(0))), Integer.parseInt(String.valueOf(opt.get(1)))));
+                        if (item != null) {
+                            JSONArray options = (JSONArray) JSONValue.parse(String.valueOf(dataItem.get(2)).replaceAll("\"", ""));
+                            for (int j = 0; j < options.size(); j++) {
+                                JSONArray opt = (JSONArray) JSONValue.parse(String.valueOf(options.get(j)));
+                                item.itemOptions.add(new Item.ItemOption(Integer.parseInt(String.valueOf(opt.get(0))), Integer.parseInt(String.valueOf(opt.get(1)))));
+                            }
+                        } else {
+                            // Item ID không hợp lệ, tạo item null thay thế
+                            System.err.println("NDVSqlFetcher.loadPlayer: Invalid item ID " + tempId + " for player " + player.name + ", creating null item");
+                            item = ItemService.gI().createItemNull();
                         }
                         item.createTime = Long.parseLong(String.valueOf(dataItem.get(3)));
                         if (item.template.id == 2132) {
@@ -1217,14 +1263,20 @@ public class NDVSqlFetcher {
                         short tempId = Short.parseShort(String.valueOf(dataItem.get(0)));
                         if (tempId != -1) {
                             item = ItemService.gI().createNewItem(tempId, Integer.parseInt(String.valueOf(dataItem.get(1))));
-                            JSONArray options = (JSONArray) JSONValue.parse(String.valueOf(dataItem.get(2)).replaceAll("\"", ""));
-                            for (int j = 0; j < options.size(); j++) {
-                                JSONArray opt = (JSONArray) JSONValue.parse(String.valueOf(options.get(j)));
-                                item.itemOptions.add(new Item.ItemOption(Integer.parseInt(String.valueOf(opt.get(0))),
-                                        Integer.parseInt(String.valueOf(opt.get(1)))));
-                            }
-                            item.createTime = Long.parseLong(String.valueOf(dataItem.get(3)));
-                            if (ItemService.gI().isOutOfDateTime(item)) {
+                            if (item != null) {
+                                JSONArray options = (JSONArray) JSONValue.parse(String.valueOf(dataItem.get(2)).replaceAll("\"", ""));
+                                for (int j = 0; j < options.size(); j++) {
+                                    JSONArray opt = (JSONArray) JSONValue.parse(String.valueOf(options.get(j)));
+                                    item.itemOptions.add(new Item.ItemOption(Integer.parseInt(String.valueOf(opt.get(0))),
+                                            Integer.parseInt(String.valueOf(opt.get(1)))));
+                                }
+                                item.createTime = Long.parseLong(String.valueOf(dataItem.get(3)));
+                                if (ItemService.gI().isOutOfDateTime(item)) {
+                                    item = ItemService.gI().createItemNull();
+                                }
+                            } else {
+                                // Item ID không hợp lệ, tạo item null thay thế
+                                System.err.println("NDVSqlFetcher.getAllPlayer: Invalid item ID " + tempId + " for player " + player.name + " (item_mails_box), creating null item");
                                 item = ItemService.gI().createItemNull();
                             }
                         } else {
@@ -1426,6 +1478,54 @@ public class NDVSqlFetcher {
                 return true;
             } catch (SQLException e) {
                 Logger.logException(PlayerDAO.class, e, "Error updating MailsBox for player: " + player.name);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+        return false;
+    }
+
+    public static boolean reloadMailBox(Player player) {
+        try {
+            // Clear current mailbox
+            player.inventory.itemsMailBox.clear();
+            
+            // Reload from database
+            try ( Connection con = DBConnecter.getConnectionServer();  PreparedStatement ps = con.prepareStatement("SELECT item_mails_box FROM player WHERE id = ?")) {
+                ps.setLong(1, player.id);
+                try ( ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        JSONArray dataArray = (JSONArray) JSONValue.parse(rs.getString("item_mails_box"));
+                        for (int i = 0; i < dataArray.size(); i++) {
+                            Item item = null;
+                            JSONArray dataItem = (JSONArray) JSONValue.parse(dataArray.get(i).toString());
+                            short tempId = Short.parseShort(String.valueOf(dataItem.get(0)));
+                            if (tempId != -1) {
+                                item = ItemService.gI().createNewItem(tempId, Integer.parseInt(String.valueOf(dataItem.get(1))));
+                                if (item != null) {
+                                    JSONArray options = (JSONArray) JSONValue.parse(String.valueOf(dataItem.get(2)).replaceAll("\"", ""));
+                                    for (int j = 0; j < options.size(); j++) {
+                                        JSONArray opt = (JSONArray) JSONValue.parse(String.valueOf(options.get(j)));
+                                        item.itemOptions.add(new Item.ItemOption(Integer.parseInt(String.valueOf(opt.get(0))), Integer.parseInt(String.valueOf(opt.get(1)))));
+                                    }
+                                    item.createTime = Long.parseLong(String.valueOf(dataItem.get(3)));
+                                    if (ItemService.gI().isOutOfDateTime(item)) {
+                                        item = ItemService.gI().createItemNull();
+                                    }
+                                } else {
+                                    item = ItemService.gI().createItemNull();
+                                }
+                            } else {
+                                item = ItemService.gI().createItemNull();
+                            }
+                            player.inventory.itemsMailBox.add(item);
+                        }
+                    }
+                }
+                return true;
+            } catch (SQLException e) {
+                Logger.logException(NDVSqlFetcher.class, e, "Error reloading MailsBox for player: " + player.name);
             }
         } catch (Exception e) {
             e.printStackTrace();

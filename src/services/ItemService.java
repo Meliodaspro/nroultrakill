@@ -86,6 +86,10 @@ public class ItemService {
     public Item createNewItem(short tempId, int quantity) {
         Item item = new Item();
         item.template = getTemplate(tempId);
+        if (item.template == null) {
+            System.err.println("ItemService.createNewItem: Cannot create item with invalid template ID " + tempId);
+            return null;
+        }
         item.quantity = quantity;
         item.createTime = System.currentTimeMillis();
 
@@ -157,6 +161,10 @@ public class ItemService {
     }
 
     public Template.ItemTemplate getTemplate(int id) {
+        if (id < 0 || id >= Manager.ITEM_TEMPLATES.size()) {
+            System.err.println("ItemService.getTemplate: Invalid item ID " + id + ", template list size: " + Manager.ITEM_TEMPLATES.size());
+            return null;
+        }
         return Manager.ITEM_TEMPLATES.get(id);
     }
 

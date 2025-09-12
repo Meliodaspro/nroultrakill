@@ -188,7 +188,7 @@ public class SnakeWay implements Runnable {
                 }
             }
         }
-        new Thread(this, "Con Đường Rắn Độc: " + this.clan.name).start();
+        utils.Threading.runLongLived(this);
     }
 
     //kết thúc con đường rắn độc

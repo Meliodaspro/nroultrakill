@@ -69,6 +69,7 @@ public class Input {
     public static final int DOI_NGOC_HONG = 518;
     public static final int BUFFVND = 519;
     public static final int SEND_ITEM = 520;
+    public static final int BUFF_ALL_SERVER = 521;
     public static final byte NUMERIC = 0;
     public static final byte ANY = 1;
     public static final byte PASSWORD = 2;
@@ -133,24 +134,35 @@ public class Input {
                                 if (pBuffItem != null) {
                                     String[] itemIdsArray = itemIds.split(",");
                                     for (String itemId : itemIdsArray) {
-                                        int idItemBuff = Integer.parseInt(itemId);
-                                        Item itembuff = ItemService.gI().createNewItem((short) idItemBuff, slItemBuff);
+                                        try {
+                                            int idItemBuff = Integer.parseInt(itemId);
+                                            Item itembuff = ItemService.gI().createNewItem((short) idItemBuff, slItemBuff);
+                                            
+                                            if (itembuff == null) {
+                                                System.err.println("Cannot create item with ID: " + idItemBuff);
+                                                continue;
+                                            }
 
-                                        if (option != null) {
-                                            String[] Option = option.split(",");
-                                            if (Option.length > 0) {
-                                                for (int i = 0; i < Option.length; i++) {
-                                                    String[] optItem = Option[i].split("-");
-                                                    int optID = Integer.parseInt(optItem[0]);
-                                                    int param = Integer.parseInt(optItem[1]);
-                                                    itembuff.itemOptions.add(new ItemOption(optID, param));
+                                            if (option != null) {
+                                                String[] Option = option.split(",");
+                                                if (Option.length > 0) {
+                                                    for (int i = 0; i < Option.length; i++) {
+                                                        String[] optItem = Option[i].split("-");
+                                                        if (optItem.length >= 2) {
+                                                            int optID = Integer.parseInt(optItem[0]);
+                                                            int param = Integer.parseInt(optItem[1]);
+                                                            itembuff.itemOptions.add(new ItemOption(optID, param));
+                                                        }
+                                                    }
                                                 }
                                             }
-                                        }
-                                        pBuffItem.inventory.itemsMailBox.add(itembuff);
+                                            pBuffItem.inventory.itemsMailBox.add(itembuff);
 
-                                        if (NDVSqlFetcher.updateMailBox(pBuffItem)) {
-                                            Service.gI().sendThongBao(player, "Bạn vừa gửi " + itembuff.template.name + " thành công cho " + pBuffItem.name);
+                                            if (NDVSqlFetcher.updateMailBox(pBuffItem)) {
+                                                Service.gI().sendThongBao(player, "Bạn vừa gửi " + itembuff.template.name + " thành công cho " + pBuffItem.name);
+                                            }
+                                        } catch (NumberFormatException e) {
+                                            System.err.println("Invalid item ID format: " + itemId);
                                         }
                                     }
                                 } else {
@@ -163,22 +175,34 @@ public class Input {
                         if (pBuffItem != null) {
                             String[] itemIdsArray = itemIds.split(",");
                             for (String itemId : itemIdsArray) {
-                                int idItemBuff = Integer.parseInt(itemId);
-                                Item itembuff = ItemService.gI().createNewItem((short) idItemBuff, slItemBuff);
-                                if (option != null) {
-                                    String[] Option = option.split(",");
-                                    if (Option.length > 0) {
-                                        for (int i = 0; i < Option.length; i++) {
-                                            String[] optItem = Option[i].split("-");
-                                            int optID = Integer.parseInt(optItem[0]);
-                                            int param = Integer.parseInt(optItem[1]);
-                                            itembuff.itemOptions.add(new ItemOption(optID, param));
+                                try {
+                                    int idItemBuff = Integer.parseInt(itemId);
+                                    Item itembuff = ItemService.gI().createNewItem((short) idItemBuff, slItemBuff);
+                                    
+                                    if (itembuff == null) {
+                                        System.err.println("Cannot create item with ID: " + idItemBuff);
+                                        continue;
+                                    }
+                                    
+                                    if (option != null) {
+                                        String[] Option = option.split(",");
+                                        if (Option.length > 0) {
+                                            for (int i = 0; i < Option.length; i++) {
+                                                String[] optItem = Option[i].split("-");
+                                                if (optItem.length >= 2) {
+                                                    int optID = Integer.parseInt(optItem[0]);
+                                                    int param = Integer.parseInt(optItem[1]);
+                                                    itembuff.itemOptions.add(new ItemOption(optID, param));
+                                                }
+                                            }
                                         }
                                     }
-                                }
-                                pBuffItem.inventory.itemsMailBox.add(itembuff);
-                                if (NDVSqlFetcher.updateMailBox(pBuffItem)) {
-                                    Service.gI().sendThongBao(player, "Bạn vừa gửi " + itembuff.template.name + " thành công cho " + pBuffItem.name);
+                                    pBuffItem.inventory.itemsMailBox.add(itembuff);
+                                    if (NDVSqlFetcher.updateMailBox(pBuffItem)) {
+                                        Service.gI().sendThongBao(player, "Bạn vừa gửi " + itembuff.template.name + " thành công cho " + pBuffItem.name);
+                                    }
+                                } catch (NumberFormatException e) {
+                                    System.err.println("Invalid item ID format: " + itemId);
                                 }
                             }
                         } else {
@@ -509,6 +533,84 @@ public class Input {
                     LuckyNumberService.addNumber(player, number);
                 }
                 break;
+                case BUFF_ALL_SERVER: {
+                    String itemIds = text[0];
+                    String option = text[1];
+                    int slItemBuff = Integer.parseInt(text[2]);
+                    if (slItemBuff > 999) {
+                        Service.gI().sendThongBaoOK(player, "Buff vượt số lượng giới hạn vui lòng để tối đa sl 999");
+                        return;
+                    }
+                    
+                    new Thread(() -> {
+                        try {
+                            List<Player> allPlayer = NDVSqlFetcher.getAllPlayer();
+                            int successCount = 0;
+                            int totalCount = allPlayer.size();
+                            
+                            if (allPlayer == null || allPlayer.isEmpty()) {
+                                Service.gI().sendThongBao(player, "Không tìm thấy người chơi nào!");
+                                return;
+                            }
+                            
+                            for (Player pBuffItem : allPlayer) {
+                                if (pBuffItem != null) {
+                                    // Kiểm tra xem player có đang online không
+                                    Player onlinePlayer = Client.gI().getPlayer(pBuffItem.name);
+                                    Player targetPlayer = (onlinePlayer != null) ? onlinePlayer : pBuffItem;
+                                    
+                                    String[] itemIdsArray = itemIds.split(",");
+                                    for (String itemId : itemIdsArray) {
+                                        try {
+                                            int idItemBuff = Integer.parseInt(itemId);
+                                            Item itembuff = ItemService.gI().createNewItem((short) idItemBuff, slItemBuff);
+                                            
+                                            if (itembuff == null) {
+                                                System.err.println("Cannot create item with ID: " + idItemBuff);
+                                                continue;
+                                            }
+
+                                            if (option != null && !option.trim().isEmpty()) {
+                                                String[] Option = option.split(",");
+                                                if (Option.length > 0) {
+                                                    for (int i = 0; i < Option.length; i++) {
+                                                        String[] optItem = Option[i].split("-");
+                                                        if (optItem.length >= 2) {
+                                                            int optID = Integer.parseInt(optItem[0]);
+                                                            int param = Integer.parseInt(optItem[1]);
+                                                            itembuff.itemOptions.add(new ItemOption(optID, param));
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            targetPlayer.inventory.itemsMailBox.add(itembuff);
+                                            
+                                            // Cập nhật database ngay sau khi thêm mỗi item (giống SEND_ITEM)
+                                            if (NDVSqlFetcher.updateMailBox(targetPlayer)) {
+                                                // Gửi thông báo cho người chơi online
+                                                if (onlinePlayer != null) {
+                                                    Service.gI().sendThongBao(onlinePlayer, "Bạn vừa nhận được item từ admin! Item đã có trong hộp thư.");
+                                                }
+                                            } else {
+                                                System.err.println("Failed to update mailbox for player: " + targetPlayer.name);
+                                            }
+                                        } catch (NumberFormatException e) {
+                                            System.err.println("Invalid item ID format: " + itemId);
+                                        }
+                                    }
+                                    successCount++;
+                                }
+                            }
+                            
+                            Service.gI().sendThongBao(player, "Đã gửi buff item thành công cho " + successCount + "/" + totalCount + " người chơi trên server!");
+                            
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            Service.gI().sendThongBao(player, "Có lỗi xảy ra khi gửi buff item toàn server: " + e.getMessage());
+                        }
+                    }).start();
+                }
+                break;
             }
         } catch (Exception e) {
         }
@@ -663,6 +765,13 @@ public class Input {
         createForm(player, BUFFVND, "Buff VNĐ",
                 new SubInput("id acc người chơi", NUMERIC),
                 new SubInput("VNĐ CẦN BUFF", ANY));
+    }
+
+    public void createFormBuffAllServer(Player player) {
+        createForm(player, BUFF_ALL_SERVER, "Buff Item Toàn Server",
+                new SubInput("ID Item (cách nhau bởi dấu phẩy)", ANY),
+                new SubInput("Chuỗi option (ID-PARAM,ID-PARAM)", ANY),
+                new SubInput("Số lượng", NUMERIC));
     }
 
     public static class SubInput {

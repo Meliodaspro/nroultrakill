@@ -15,6 +15,8 @@ import jdbc.daos.PlayerDAO;
 import npc.Npc;
 import player.Player;
 import services.InventoryService;
+import models.GiftCode.GiftCode;
+import models.GiftCode.GiftCodeManager;
 import services.ItemService;
 import services.NpcService;
 import services.PetService;
@@ -45,12 +47,10 @@ public class OngGohan extends Npc {
                         + "\n Con có thể nhận quà nạp mốc, đua top sự kiện tại Quy Lão Kame\n"
                         + "Code tân thủ:\n|4|"
                         + "• giftcode : \n"
-                        + "       - duatoptest\n"
-                        + "       -\n"
-                        + "       -\n"
+                        + recentGiftCodes()
                        
                         + "Mở thành viên tại Bardock làng , nhận đệ tử miễn phí\n|1|"
-                        + "Lưu ý: Chỉ giao dịch nạp tiền qua duy nhất qua admin key vàng"
+                        + "Lưu ý: Chỉ giao dịch nạp tiền qua duy nhất qua admin"
                         + "\nmọi rủi ro tự chịu nếu không chấp hành.",
                         "GiftCode",
                         "Nạp tiền",
@@ -62,6 +62,29 @@ public class OngGohan extends Npc {
                         "Nhận đệ tử",
                         "Từ chối");
             }
+        }
+    }
+
+    private String recentGiftCodes() {
+        try {
+            // đảm bảo danh sách giftcode được cập nhật trước khi lấy
+            models.GiftCode.GiftCodeService.gI().updateGiftCode();
+            List<GiftCode> all = GiftCodeManager.gI().listGiftCode;
+            if (all.isEmpty()) return "       -\n       -\n       -\n";
+            // sắp xếp theo thời điểm tạo giảm dần
+            all.sort((a, b) -> Long.compare(
+                    b.datecreate != null ? b.datecreate.getTime() : 0L,
+                    a.datecreate != null ? a.datecreate.getTime() : 0L));
+            StringBuilder sb = new StringBuilder();
+            int limit = Math.min(3, all.size());
+            for (int i = 0; i < limit; i++) {
+                sb.append("       - ").append(all.get(i).code).append("\n");
+            }
+            // nếu ít hơn 3 thì chèn dòng trống cho đẹp layout
+            for (int i = limit; i < 3; i++) sb.append("       -\n");
+            return sb.toString();
+        } catch (Exception e) {
+            return "       -\n       -\n       -\n";
         }
     }
 

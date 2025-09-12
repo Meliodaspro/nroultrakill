@@ -56,18 +56,36 @@ public class GiftCodeService {
                 }
                 giftcode.datecreate = rs.getTimestamp("datecreate");
                 giftcode.dateexpired = rs.getTimestamp("expired");
-                JSONArray jar = (JSONArray) JSONValue.parse(rs.getString("detail"));
-                if (jar != null) {
-                    for (int i = 0; i < jar.size(); ++i) {
-                        JSONObject jsonObj = (JSONObject) jar.get(i);
-
+                Object parsed = JSONValue.parse(rs.getString("detail"));
+                if (parsed != null) {
+                    if (parsed instanceof JSONArray) {
+                        JSONArray jar = (JSONArray) parsed;
+                        for (int i = 0; i < jar.size(); ++i) {
+                            JSONObject jsonObj = (JSONObject) jar.get(i);
+                            int id = Integer.parseInt(jsonObj.get("temp_id").toString());
+                            int quantity = Integer.parseInt(jsonObj.get("quantity").toString());
+                            ArrayList<Item.ItemOption> optionList = new ArrayList<>();
+                            Object opts = jsonObj.get("options");
+                            if (opts instanceof JSONArray) {
+                                JSONArray option = (JSONArray) opts;
+                                for (int u = 0; u < option.size(); u++) {
+                                    JSONObject jsonobject = (JSONObject) option.get(u);
+                                    int optionId = Integer.parseInt(jsonobject.get("id").toString());
+                                    int param = Integer.parseInt(jsonobject.get("param").toString());
+                                    optionList.add(new Item.ItemOption(optionId, param));
+                                }
+                            }
+                            giftcode.option.put(id, optionList);
+                            giftcode.detail.put(id, quantity);
+                        }
+                    } else if (parsed instanceof JSONObject) {
+                        JSONObject jsonObj = (JSONObject) parsed;
                         int id = Integer.parseInt(jsonObj.get("temp_id").toString());
                         int quantity = Integer.parseInt(jsonObj.get("quantity").toString());
-
-                        JSONArray option = (JSONArray) jsonObj.get("options");
                         ArrayList<Item.ItemOption> optionList = new ArrayList<>();
-
-                        if (option != null) {
+                        Object opts = jsonObj.get("options");
+                        if (opts instanceof JSONArray) {
+                            JSONArray option = (JSONArray) opts;
                             for (int u = 0; u < option.size(); u++) {
                                 JSONObject jsonobject = (JSONObject) option.get(u);
                                 int optionId = Integer.parseInt(jsonobject.get("id").toString());

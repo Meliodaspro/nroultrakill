@@ -336,7 +336,7 @@ public class Player implements Runnable {
     }
 
     public void start() {
-        new Thread(this, "Update player " + this.name).start();
+        utils.Threading.runLongLived(this);
     }
 
     public void update() {
@@ -964,6 +964,12 @@ public class Player implements Runnable {
             }
         }
 
+        if (fusion != null && fusion.typeFusion == ConstPlayer.HOP_THE_PORATA3) {
+            // Ngoại hình hợp thể Porata cấp 3 theo giới tính
+            if (gender == ConstPlayer.TRAI_DAT) return 2180;
+            if (gender == ConstPlayer.NAMEC) return 2190;
+            if (gender == ConstPlayer.XAYDA) return 2185;
+        }
         if (effectSkill != null && effectSkill.isSuper) {
             return getHeadSuper();
         } else if (effectSkill != null && effectSkill.isBinh) {
@@ -1015,6 +1021,11 @@ public class Player implements Runnable {
                 return 1581;
             }
         }
+        if (fusion != null && fusion.typeFusion == ConstPlayer.HOP_THE_PORATA3) {
+            if (gender == ConstPlayer.TRAI_DAT) return 2183;
+            if (gender == ConstPlayer.NAMEC) return 2193;
+            if (gender == ConstPlayer.XAYDA) return 2188;
+        }
         if (effectSkill != null && effectSkill.isSuper) {
             return getBodySuper();
         } else if (effectSkill != null && effectSkill.isBinh) {
@@ -1063,6 +1074,11 @@ public class Player implements Runnable {
             if (hasItem1 && hasItem2 && !sameItem) {
                 return 1582;
             }
+        }
+        if (fusion != null && fusion.typeFusion == ConstPlayer.HOP_THE_PORATA3) {
+            if (gender == ConstPlayer.TRAI_DAT) return 2184;
+            if (gender == ConstPlayer.NAMEC) return 2194;
+            if (gender == ConstPlayer.XAYDA) return 2189;
         }
         if (effectSkill != null && effectSkill.isSuper) {
             return getLegSuper();

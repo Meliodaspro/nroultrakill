@@ -25,5 +25,6 @@ public class ConstPlayer {
     public static final byte LUONG_LONG_NHAT_THE = 4;
     public static final byte HOP_THE_PORATA = 6;
     public static byte HOP_THE_PORATA2 = 8;
+    public static byte HOP_THE_PORATA3 = 10;
      public static byte LUONG_LONG_NHAT_THE_GOGETA = 12;
 }

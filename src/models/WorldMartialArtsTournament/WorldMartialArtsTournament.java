@@ -48,7 +48,7 @@ public final class WorldMartialArtsTournament implements Runnable {
         ChangeMapService.gI().changeMap(player_2, zone, 443, 262);
         npc = zone.getNpc();
         Service.gI().setPos(npc, npc.location.x, 312);
-        new Thread(this).start();
+        utils.Threading.runLongLived(this);
     }
 
     @Override

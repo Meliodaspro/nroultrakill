@@ -451,6 +451,9 @@ public class UseItem {
                                 UseItem.gI().usePorata2(pl);
 //                                UseItem.gI().usePorataGogeta(pl);
                                 break;
+                            case 1756: //bong tai 3
+                                UseItem.gI().usePorata3(pl);
+                                break;
                             case 193: //gói 10 viên capsule
                                 openCapsuleUI(pl);
                                 InventoryService.gI().subQuantityItemsBag(pl, item, 1);
@@ -1338,6 +1341,18 @@ public class UseItem {
         } else {
             if (pl.fusion.typeFusion == ConstPlayer.NON_FUSION) {
                 pl.pet.fusion2(true);
+            } else {
+                pl.pet.unFusion();
+            }
+        }
+    }
+
+    private void usePorata3(Player pl) {
+        if (pl.pet == null || pl.fusion.typeFusion == 4) {
+            Service.gI().sendThongBao(pl, "Không thể thực hiện");
+        } else {
+            if (pl.fusion.typeFusion == ConstPlayer.NON_FUSION) {
+                pl.pet.fusion3(true);
             } else {
                 pl.pet.unFusion();
             }

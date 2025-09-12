@@ -25,7 +25,7 @@ public class PetService {
     }
 
     public void createNormalPet(Player player, int gender, byte... limitPower) {
-        new Thread(() -> {
+        utils.Threading.runAsync(() -> {
             try {
                 createNewPet(player, false, false, false, false, (byte) gender);
                 if (limitPower != null && limitPower.length == 1) {
@@ -37,11 +37,11 @@ public class PetService {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-        }).start();
+        });
     }
 
     public void createNormalPet(Player player, byte... limitPower) {
-        new Thread(() -> {
+        utils.Threading.runAsync(() -> {
             try {
                 createNewPet(player, false, false, false, false);
                 if (limitPower != null && limitPower.length == 1) {
@@ -52,11 +52,11 @@ public class PetService {
                 Service.gI().chatJustForMe(player, player.pet, "Xin hãy thu nhận làm đệ tử");
             } catch (Exception e) {
             }
-        }).start();
+        });
     }
 
     public void createMabuPet(Player player, byte... limitPower) {
-        new Thread(() -> {
+        utils.Threading.runAsync(() -> {
             try {
                 createNewPet(player, true, false, false, false);
                 if (limitPower != null && limitPower.length == 1) {
@@ -67,11 +67,11 @@ public class PetService {
                 Service.gI().chatJustForMe(player, player.pet, "Oa oa oa...");
             } catch (Exception e) {
             }
-        }).start();
+        });
     }
 
     public void createMabuPet(Player player, int gender, byte... limitPower) {
-        new Thread(() -> {
+        utils.Threading.runAsync(() -> {
             try {
                 createNewPet(player, true, false, false, false, (byte) gender);
                 if (limitPower != null && limitPower.length == 1) {
@@ -82,11 +82,11 @@ public class PetService {
                 Service.gI().chatJustForMe(player, player.pet, "Oa oa oa...");
             } catch (Exception e) {
             }
-        }).start();
+        });
     }
 
     public void createBeerusPet(Player player, byte... limitPower) {
-        new Thread(() -> {
+        utils.Threading.runAsync(() -> {
             try {
                 createNewPet(player, false, true, false, false);
                 if (limitPower != null && limitPower.length == 1) {
@@ -97,11 +97,11 @@ public class PetService {
                 Service.gI().chatJustForMe(player, player.pet, "Thần hủy diệt hiện thân tất cả quỳ xuống...");
             } catch (Exception e) {
             }
-        }).start();
+        });
     }
 
     public void createBeerusPet(Player player, int gender, byte... limitPower) {
-        new Thread(() -> {
+        utils.Threading.runAsync(() -> {
             try {
                 createNewPet(player, false, true, false, false, (byte) gender);
                 if (limitPower != null && limitPower.length == 1) {
@@ -112,11 +112,11 @@ public class PetService {
                 Service.gI().chatJustForMe(player, player.pet, "Thần hủy diệt hiện thân tất cả quỳ xuống...");
             } catch (Exception e) {
             }
-        }).start();
+        });
     }
 
     public void createPicPet(Player player, byte... limitPower) {
-        new Thread(() -> {
+        utils.Threading.runAsync(() -> {
             try {
                 createNewPet(player, false, false, true, false);
                 if (limitPower != null && limitPower.length == 1) {
@@ -127,11 +127,11 @@ public class PetService {
                 Service.gI().chatJustForMe(player, player.pet, "Sư Phụ SooMe hiện thân tụi m quỳ xuống...");
             } catch (Exception e) {
             }
-        }).start();
+        });
     }
 
     public void createPicPet(Player player, int gender, byte... limitPower) {
-        new Thread(() -> {
+        utils.Threading.runAsync(() -> {
             try {
                 createNewPet(player, false, false, true, false, (byte) gender);
                 if (limitPower != null && limitPower.length == 1) {
@@ -142,11 +142,11 @@ public class PetService {
                 Service.gI().chatJustForMe(player, player.pet, "Sư Phụ SooMe hiện thân tụi m quỳ xuống...");
             } catch (Exception e) {
             }
-        }).start();
+        });
     }
 
     public void createBlackPet(Player player, byte... limitPower) {
-        new Thread(() -> {
+        utils.Threading.runAsync(() -> {
             try {
                 createNewPet(player, false, false, false, true);
                 if (limitPower != null && limitPower.length == 1) {
@@ -157,11 +157,11 @@ public class PetService {
                 Service.gI().chatJustForMe(player, player.pet, "Ta sẽ cho người biết sức mạnh của một vị thần là như thế nào !");
             } catch (Exception e) {
             }
-        }).start();
+        });
     }
 
     public void createBlackPet(Player player, int gender, byte... limitPower) {
-        new Thread(() -> {
+        utils.Threading.runAsync(() -> {
             try {
                 createNewPet(player, false, false, false, true, (byte) gender);
                 if (limitPower != null && limitPower.length == 1) {
@@ -172,7 +172,7 @@ public class PetService {
                 Service.gI().chatJustForMe(player, player.pet, "Ta sẽ cho người biết sức mạnh của một vị thần là như thế nào !");
             } catch (Exception e) {
             }
-        }).start();
+        });
     }
 
     public void changeNormalPet(Player player, int gender) {
@@ -300,13 +300,13 @@ public class PetService {
             ChangeMapService.gI().exitMap(player.pet);
             player.pet.name = "$" + name.toLowerCase().trim();
             InventoryService.gI().subQuantityItemsBag(player, InventoryService.gI().findItemBag(player, 400), 1);
-            new Thread(() -> {
+            utils.Threading.runAsync(() -> {
                 try {
                     Thread.sleep(1000);
                     Service.gI().chatJustForMe(player, player.pet, "Cảm ơn sư phụ đã đặt cho con tên " + name);
                 } catch (Exception e) {
                 }
-            }).start();
+            });
         } catch (Exception ex) {
 
         }
@@ -355,7 +355,7 @@ public class PetService {
         } else {//Zalo: 0358124452//Name: EMTI 
             limitPower = 1;
         }
-        new Thread(() -> {//Zalo: 0358124452//Name: EMTI 
+        utils.Threading.runAsync(() -> {//Zalo: 0358124452//Name: EMTI 
             try {//Zalo: 0358124452//Name: EMTI 
                 Pet pet = new Pet(player);
                 pet.name = "$Fide Nhí";
@@ -390,7 +390,7 @@ public class PetService {
             } catch (Exception e) {//Zalo: 0358124452//Name: EMTI 
                 e.printStackTrace();
             }
-        }).start();
+        });
     }
 
     public void createPetCellNhi(Player player, boolean isChange, byte gender) {//Zalo: 0358124452//Name: EMTI 
@@ -406,7 +406,7 @@ public class PetService {
         } else {//Zalo: 0358124452//Name: EMTI 
             limitPower = 1;
         }
-        new Thread(() -> {//Zalo: 0358124452//Name: EMTI 
+        utils.Threading.runAsync(() -> {//Zalo: 0358124452//Name: EMTI 
             try {//Zalo: 0358124452//Name: EMTI 
                 Pet pet = new Pet(player);
                 pet.name = "$Cell Nhí";
@@ -441,7 +441,7 @@ public class PetService {
             } catch (Exception e) {//Zalo: 0358124452//Name: EMTI 
                 e.printStackTrace();
             }
-        }).start();
+        });
     }
 
     public void createPetBuuNhi(Player player, boolean isChange, byte gender) {//Zalo: 0358124452//Name: EMTI 
@@ -457,7 +457,7 @@ public class PetService {
         } else {//Zalo: 0358124452//Name: EMTI 
             limitPower = 1;
         }
-        new Thread(() -> {//Zalo: 0358124452//Name: EMTI 
+        utils.Threading.runAsync(() -> {//Zalo: 0358124452//Name: EMTI 
             try {//Zalo: 0358124452//Name: EMTI 
                 Pet pet = new Pet(player);
                 pet.name = "$Bưu Nhí";
@@ -492,7 +492,7 @@ public class PetService {
             } catch (Exception e) {//Zalo: 0358124452//Name: EMTI 
                 e.printStackTrace();
             }
-        }).start();
+        });
     }
 
     public void createPetAdrBeach(Player player, boolean isChange, byte gender) {//Zalo: 0358124452//Name: EMTI 
@@ -508,7 +508,7 @@ public class PetService {
         } else {//Zalo: 0358124452//Name: EMTI 
             limitPower = 1;
         }
-        new Thread(() -> {//Zalo: 0358124452//Name: EMTI 
+        utils.Threading.runAsync(() -> {//Zalo: 0358124452//Name: EMTI 
             try {//Zalo: 0358124452//Name: EMTI 
                 Pet pet = new Pet(player);
                 pet.name = "$Adr Bãi biển";
@@ -543,7 +543,7 @@ public class PetService {
             } catch (Exception e) {//Zalo: 0358124452//Name: EMTI 
                 e.printStackTrace();
             }
-        }).start();
+        });
     }
 
     public void createPetBerrusNhi(Player player, boolean isChange, byte gender) {//Zalo: 0358124452//Name: EMTI 
@@ -559,7 +559,7 @@ public class PetService {
         } else {//Zalo: 0358124452//Name: EMTI 
             limitPower = 1;
         }
-        new Thread(() -> {//Zalo: 0358124452//Name: EMTI 
+        utils.Threading.runAsync(() -> {//Zalo: 0358124452//Name: EMTI 
             try {//Zalo: 0358124452//Name: EMTI 
                 Pet pet = new Pet(player);
                 pet.name = "$Berrus nhí";
@@ -594,7 +594,7 @@ public class PetService {
             } catch (Exception e) {//Zalo: 0358124452//Name: EMTI 
                 e.printStackTrace();
             }
-        }).start();
+        });
     }
 
     public void createPetMabuGay(Player player, boolean isChange, byte gender) {//Zalo: 0358124452//Name: EMTI 
@@ -677,7 +677,7 @@ public class PetService {
     }
 
     public void createNormalPetSuperGender(Player player, int gender, byte type) {//Zalo: 0358124452//Name: EMTI 
-        new Thread(() -> {//Zalo: 0358124452//Name: EMTI 
+        utils.Threading.runAsync(() -> {//Zalo: 0358124452//Name: EMTI 
             try {//Zalo: 0358124452//Name: EMTI 
                 createNewPetSuperGender(player, (byte) gender, type);
                 Thread.sleep(1000);
@@ -685,11 +685,11 @@ public class PetService {
             } catch (Exception e) {//Zalo: 0358124452//Name: EMTI 
                 e.printStackTrace();
             }
-        }).start();
+        });
     }
 
     public void createNormalPetSuper(Player player, int gender, byte type) {//Zalo: 0358124452//Name: EMTI 
-        new Thread(() -> {//Zalo: 0358124452//Name: EMTI 
+        utils.Threading.runAsync(() -> {//Zalo: 0358124452//Name: EMTI 
             try {//Zalo: 0358124452//Name: EMTI 
                 createNewPetSuper(player, (byte) gender, type);
                 Thread.sleep(1000);
@@ -697,7 +697,7 @@ public class PetService {
             } catch (Exception e) {//Zalo: 0358124452//Name: EMTI 
                 e.printStackTrace();
             }
-        }).start();
+        });
     }
 
     private void createNewPetSuper(Player player, byte gender, byte type) {//Zalo: 0358124452//Name: EMTI 

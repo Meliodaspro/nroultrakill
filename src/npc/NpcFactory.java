@@ -575,6 +575,8 @@ public class NpcFactory {
                                 Input.gI().createFormBuffVND(player);
                             case 7 ->
                                 Input.gI().createFromMailBox(player);
+                            case 8 ->
+                                Input.gI().createFormBuffAllServer(player);
                         }
                     }
                     case ConstNpc.CONFIRM_DISSOLUTION_CLAN -> {

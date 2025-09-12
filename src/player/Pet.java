@@ -227,6 +227,29 @@ public class Pet extends Player {
         }
     }
 
+    public void fusion3(boolean porata) {
+        if (this.isDie()) {
+            Service.gI().sendThongBao(master, "Yêu cầu phải có đệ tử và đệ tử còn sống");
+            return;
+        }
+        if (Util.canDoWithTime(lastTimeUnfusion, TIME_WAIT_AFTER_UNFUSION)) {
+            if (porata) {
+                master.fusion.typeFusion = ConstPlayer.HOP_THE_PORATA3;
+            }
+            this.status = FUSION;
+            ChangeMapService.gI().exitMap(this);
+            fusionEffect(master.fusion.typeFusion);
+            master.nPoint.calPoint();
+            master.nPoint.setFullHpMp();
+            Service.gI().point(master);
+            Service.gI().Send_Caitrang(master);
+            fusionGogeta();
+        } else {
+            Service.gI().sendThongBao(this.master, "Vui lòng đợi "
+                    + TimeUtil.getTimeLeft(lastTimeUnfusion, TIME_WAIT_AFTER_UNFUSION / 1000) + " nữa");
+        }
+    }
+
     public void fusion(boolean porata) {
         if (this.isDie()) {
             Service.gI().sendThongBao(master, "Yêu cầu phải có đệ tử và đệ tử còn sống");

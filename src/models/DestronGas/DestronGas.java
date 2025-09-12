@@ -173,7 +173,7 @@ public class DestronGas implements Runnable {
                 }
             }
         }
-        new Thread(this, "Khí Gas Hủy Diệt: " + this.clan.name).start();
+        utils.Threading.runLongLived(this);
     }
 
     //kết thúc khí gas hủy diệt

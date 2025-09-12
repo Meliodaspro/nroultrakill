@@ -34,7 +34,6 @@ import org.apache.commons.lang.ArrayUtils;
 import services.TaskService;
 import java.time.*;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public class Util {
 
@@ -479,13 +478,13 @@ public class Util {
     }
 
     public static void checkPlayer(Player player) {
-        new Thread(() -> {
+        Threading.runAsync(() -> {
             List<Player> list = Client.gI().getPlayers().stream().filter(p -> !p.isPet && !p.isNewPet && p.getSession().userId == player.getSession().userId).collect(Collectors.toList());
             if (list.size() > 1) {
                 list.forEach(pp -> Client.gI().kickSession(pp.getSession()));
                 list.clear();
             }
-        }).start();
+        });
     }
 
     public static boolean isAfterMidnight(long currenttimemillis) {
@@ -556,16 +555,7 @@ public class Util {
     }
 
     public static void threadPool(Runnable task) {
-        ExecutorService executor = Executors.newSingleThreadExecutor();
-        executor.submit(() -> {
-            try {
-                task.run();
-            } catch (Exception e) {
-                Logger.error(e + "\n");
-            } finally {
-                executor.shutdown();
-            }
-        });
+        Threading.runAsync(task);
     }
 
     public static String formatBytes(long bytes) {
@@ -581,13 +571,7 @@ public class Util {
     }
 
     public static void setTimeout(Runnable runnable, int delay) {
-        new Thread(() -> {
-            try {
-                Thread.sleep(delay);
-                runnable.run();
-            } catch (InterruptedException e) {
-            }
-        }).start();
+        Threading.runDelayed(runnable, delay);
     }
 
     public static String addSlashes(String input) {

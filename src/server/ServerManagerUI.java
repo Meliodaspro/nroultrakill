@@ -20,7 +20,9 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import network.SessionManager;
+import network.server.EmtiSessionManager;
 import utils.Logger;
+import utils.Threading;
 
 public class ServerManagerUI extends JFrame {
 
@@ -69,23 +71,20 @@ public class ServerManagerUI extends JFrame {
         add(tabbedPane, BorderLayout.CENTER);
 
         // Khởi tạo ScheduledExecutorService để cập nhật uptime
-        scheduler = Executors.newScheduledThreadPool(1);
+        scheduler = Threading.scheduler();
         scheduler.scheduleAtFixedRate(this::updateUptime, 0, 1, TimeUnit.SECONDS);
 
         setVisible(true);
         
-        // Hiển thị trạng thái server
-        JOptionPane.showMessageDialog(this, "Server đang chạy");
-        
         // Khởi động server trong thread riêng để tránh lag panel
-        new Thread(() -> {
+        Threading.runAsync(() -> {
             try {
                 ServerManager.gI().run();
             } catch (Exception e) {
                 Logger.error("Lỗi khởi động server: " + e.getMessage());
                 e.printStackTrace();
             }
-        }, "ServerStartupThread").start();
+        });
     }
     
     // Panel thông tin server
@@ -106,14 +105,12 @@ public class ServerManagerUI extends JFrame {
         panel.add(onlineLabel);
         
         // Cập nhật thống kê real-time
-        ScheduledExecutorService threadCountExecutor = Executors.newSingleThreadScheduledExecutor();
-        threadCountExecutor.scheduleAtFixedRate(() -> {
+        Threading.scheduler().scheduleAtFixedRate(() -> {
             int threadCount = Thread.activeCount();
             threadLabel.setText("Thread: " + threadCount);
         }, 1, 1, TimeUnit.SECONDS);
 
-        ScheduledExecutorService plCountExecutor = Executors.newSingleThreadScheduledExecutor();
-        plCountExecutor.scheduleAtFixedRate(() -> {
+        Threading.scheduler().scheduleAtFixedRate(() -> {
             int plcount = server.Client.gI().getPlayers().size();
             onlineLabel.setText("Online: " + plcount);
         }, 5, 1, TimeUnit.SECONDS);
@@ -143,7 +140,7 @@ public class ServerManagerUI extends JFrame {
                     int dialogResult = JOptionPane.showConfirmDialog(this, "Bắt đầu bảo trì sau " + seconds + " giây?", "Bảo trì", dialogButton);
                     if (dialogResult == 0) {
                         // Chạy bảo trì trong thread riêng để tránh lag panel
-                        new Thread(() -> {
+                        Threading.runAsync(() -> {
                             try {
                                 Logger.error("Server tiến hành bảo trì sau " + seconds + " giây");
                                 Maintenance.gI().start(seconds);
@@ -156,7 +153,7 @@ public class ServerManagerUI extends JFrame {
                                     JOptionPane.showMessageDialog(this, "Lỗi thực hiện bảo trì: " + ex.getMessage());
                                 });
                             }
-                        }, "ImmediateMaintenanceThread").start();
+                        });
                     } else {
                         System.out.println("No Option");
                     }
@@ -202,6 +199,17 @@ public class ServerManagerUI extends JFrame {
         }
         JComboBox<Integer> hoursComboBox = new JComboBox<>(hoursModel);
         hoursComboBox.setSelectedItem(hours);
+        hoursComboBox.setRenderer(new javax.swing.DefaultListCellRenderer() {
+            @Override
+            public java.awt.Component getListCellRendererComponent(javax.swing.JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                String text = String.valueOf(value);
+                try {
+                    int v = Integer.parseInt(text);
+                    if (v >= 0 && v < 10) text = "0" + v; // hiển thị 2 chữ số
+                } catch (Exception ignored) {}
+                return super.getListCellRendererComponent(list, text, index, isSelected, cellHasFocus);
+            }
+        });
         schedulePanel.add(label2);
         schedulePanel.add(hoursComboBox);
         
@@ -212,6 +220,17 @@ public class ServerManagerUI extends JFrame {
         }
         JComboBox<Integer> minutesComboBox = new JComboBox<>(minutesModel);
         minutesComboBox.setSelectedItem(minutes);
+        minutesComboBox.setRenderer(new javax.swing.DefaultListCellRenderer() {
+            @Override
+            public java.awt.Component getListCellRendererComponent(javax.swing.JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                String text = String.valueOf(value);
+                try {
+                    int v = Integer.parseInt(text);
+                    if (v >= 0 && v < 10) text = "0" + v;
+                } catch (Exception ignored) {}
+                return super.getListCellRendererComponent(list, text, index, isSelected, cellHasFocus);
+            }
+        });
         schedulePanel.add(label3);
         schedulePanel.add(minutesComboBox);
         
@@ -222,18 +241,29 @@ public class ServerManagerUI extends JFrame {
         }
         JComboBox<Integer> secondsComboBox = new JComboBox<>(secondsModel);
         secondsComboBox.setSelectedItem(seconds);
+        secondsComboBox.setRenderer(new javax.swing.DefaultListCellRenderer() {
+            @Override
+            public java.awt.Component getListCellRendererComponent(javax.swing.JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                String text = String.valueOf(value);
+                try {
+                    int v = Integer.parseInt(text);
+                    if (v >= 0 && v < 10) text = "0" + v;
+                } catch (Exception ignored) {}
+                return super.getListCellRendererComponent(list, text, index, isSelected, cellHasFocus);
+            }
+        });
         schedulePanel.add(label4);
         schedulePanel.add(secondsComboBox);
         
         JButton scheduleButton = new JButton("Hẹn giờ");
         scheduleButton.setPreferredSize(new Dimension(100, 35));
         scheduleButton.setFont(new Font("Arial", Font.PLAIN, 11));
-        scheduleButton.addActionListener(e -> scheduleMaintenance(hoursComboBox, minutesComboBox, secondsComboBox));
+        scheduleButton.addActionListener(e -> scheduleMaintenance(hoursComboBox, minutesComboBox, secondsComboBox, true));
         schedulePanel.add(scheduleButton);
         
         // Tự động hẹn giờ nếu đã có cài đặt
         if (hours != -1 && minutes != -1 && seconds != -1) {
-            scheduleMaintenance(hoursComboBox, minutesComboBox, secondsComboBox);
+            scheduleMaintenance(hoursComboBox, minutesComboBox, secondsComboBox, false);
         }
         
         
@@ -246,7 +276,7 @@ public class ServerManagerUI extends JFrame {
         saveButton.setFont(new Font("Arial", Font.PLAIN, 11));
         saveButton.addActionListener(e -> {
             // Chạy trong thread riêng để tránh lag panel
-            new Thread(() -> {
+            Threading.runAsync(() -> {
                 try {
                     Logger.success("Đang tiến hành lưu data");
                     network.server.EMTIServer.gI().stopConnect();
@@ -286,13 +316,13 @@ public class ServerManagerUI extends JFrame {
                     Logger.error("Lỗi trong quá trình lưu data: " + ex.getMessage());
                     ex.printStackTrace();
                 }
-            }, "SaveDataThread").start();
+            });
         });
         
         JButton clearFwButton = new JButton("Clear Firewall");
         clearFwButton.addActionListener(e -> {
             // Chạy trong thread riêng để tránh lag panel
-            new Thread(() -> {
+            Threading.runAsync(() -> {
                 try {
                     int count = server.io.MySession.getAntiLoginCount();
                     server.io.MySession.clearAntiLogin();
@@ -309,7 +339,7 @@ public class ServerManagerUI extends JFrame {
                         JOptionPane.showMessageDialog(this, "Lỗi khi xóa anti-login: " + ex.getMessage());
                     });
                 }
-            }, "ClearFirewallThread").start();
+            });
         });
         
         otherPanel.add(saveButton);
@@ -930,12 +960,15 @@ public class ServerManagerUI extends JFrame {
         panel.add(freeMemoryPanel);
         panel.add(threadPanel);
         
-        // Cập nhật session count real-time
-        ScheduledExecutorService ssCountExecutor = Executors.newSingleThreadScheduledExecutor();
-        ssCountExecutor.scheduleAtFixedRate(() -> {
-            int sscount = SessionManager.gI().getSessions().size();
+        // Cập nhật session count real-time (dựa trên EmtiSessionManager)
+        Threading.scheduler().scheduleAtFixedRate(() -> {
+            int sscount = EmtiSessionManager.gI().getNumSession();
             sessionLabel.setText("Session: " + sscount);
         }, 5, 1, TimeUnit.SECONDS);
+        // Cập nhật số thread real-time để đồng bộ với nhãn trên cùng
+        Threading.scheduler().scheduleAtFixedRate(() -> {
+            threadLabel.setText("Số lượng: " + Thread.activeCount());
+        }, 1, 1, TimeUnit.SECONDS);
         
         return panel;
     }
@@ -1011,7 +1044,7 @@ public class ServerManagerUI extends JFrame {
         applyButton.setAlignmentX(JButton.CENTER_ALIGNMENT);
         applyButton.addActionListener(e -> {
             // Chạy trong thread riêng để tránh lag panel
-            new Thread(() -> {
+            Threading.runAsync(() -> {
                 try {
                     // Cập nhật trạng thái sự kiện
                     event.EventManager.TRUNG_THU = trungThuCheck.isSelected();
@@ -1036,7 +1069,7 @@ public class ServerManagerUI extends JFrame {
                         JOptionPane.showMessageDialog(eventDialog, "Lỗi cập nhật sự kiện: " + ex.getMessage());
                     });
                 }
-            }, "EventUpdateThread").start();
+            });
         });
         
         // Nút đóng
@@ -1138,7 +1171,7 @@ public class ServerManagerUI extends JFrame {
         applyButton.setAlignmentX(JButton.CENTER_ALIGNMENT);
         applyButton.addActionListener(e -> {
             // Chạy trong thread riêng để tránh lag panel
-            new Thread(() -> {
+            Threading.runAsync(() -> {
                 try {
                     int startMonth = Integer.parseInt(startMonthField.getText());
                     int startDay = Integer.parseInt(startDayField.getText());
@@ -1192,7 +1225,7 @@ public class ServerManagerUI extends JFrame {
                         JOptionPane.showMessageDialog(timeDialog, "Lỗi cập nhật: " + ex.getMessage());
                     });
                 }
-            }, "TopUpEventUpdateThread").start();
+            });
         });
         
         // Nút đóng
@@ -1351,7 +1384,7 @@ public class ServerManagerUI extends JFrame {
         applyButton.setAlignmentX(JButton.CENTER_ALIGNMENT);
         applyButton.addActionListener(e -> {
             // Chạy trong thread riêng để tránh lag panel
-            new Thread(() -> {
+            Threading.runAsync(() -> {
                 try {
                     int startMonth = Integer.parseInt(startMonthField.getText());
                     int startDay = Integer.parseInt(startDayField.getText());
@@ -1405,7 +1438,7 @@ public class ServerManagerUI extends JFrame {
                         JOptionPane.showMessageDialog(timeDialog, "Lỗi cập nhật: " + ex.getMessage());
                     });
                 }
-            }, "TopSMEventUpdateThread").start();
+            });
         });
         
         // Nút đóng
@@ -1481,7 +1514,7 @@ public class ServerManagerUI extends JFrame {
     }
     
     // Method để hẹn giờ bảo trì (từ file cũ)
-    private void scheduleMaintenance(JComboBox<Integer> hoursComboBox, JComboBox<Integer> minutesComboBox, JComboBox<Integer> secondsComboBox) {
+    private void scheduleMaintenance(JComboBox<Integer> hoursComboBox, JComboBox<Integer> minutesComboBox, JComboBox<Integer> secondsComboBox, boolean showPopup) {
         int hours = hoursComboBox.getItemAt(hoursComboBox.getSelectedIndex());
         int minutes = minutesComboBox.getItemAt(minutesComboBox.getSelectedIndex());
         int seconds = secondsComboBox.getItemAt(secondsComboBox.getSelectedIndex());
@@ -1502,37 +1535,38 @@ public class ServerManagerUI extends JFrame {
         }
 
         AtomicBoolean timeReached = new AtomicBoolean(false);
-        JOptionPane.showMessageDialog(this, "Đã cài đặt quá trình bảo trì tự động vào lúc " + hours + ":" + minutes + ":" + seconds + " (bảo trì 15 giây)");
+        if (showPopup) {
+            String hh = hours < 10 ? ("0" + hours) : String.valueOf(hours);
+            String mm = minutes < 10 ? ("0" + minutes) : String.valueOf(minutes);
+            String ss = seconds < 10 ? ("0" + seconds) : String.valueOf(seconds);
+            JOptionPane.showMessageDialog(this, "Đã cài đặt quá trình bảo trì tự động vào lúc " + hh + ":" + mm + ":" + ss + " (bảo trì 15 giây)");
+        }
         
-        new Thread(() -> {
-            while (!timeReached.get()) {
-                try {
-                    LocalTime currentTime = LocalTime.now();
-                    int hourss = hoursComboBox.getItemAt(hoursComboBox.getSelectedIndex());
-                    int minutess = minutesComboBox.getItemAt(minutesComboBox.getSelectedIndex());
-                    int secondss = secondsComboBox.getItemAt(secondsComboBox.getSelectedIndex());
-                    int hour_now = currentTime.getHour();
-                    int minute_now = currentTime.getMinute();
-                    int seconds_now = currentTime.getSecond();
+        Threading.scheduler().scheduleAtFixedRate(() -> {
+            if (timeReached.get()) return;
+            try {
+                LocalTime currentTime = LocalTime.now();
+                int hourss = hoursComboBox.getItemAt(hoursComboBox.getSelectedIndex());
+                int minutess = minutesComboBox.getItemAt(minutesComboBox.getSelectedIndex());
+                int secondss = secondsComboBox.getItemAt(secondsComboBox.getSelectedIndex());
+                int hour_now = currentTime.getHour();
+                int minute_now = currentTime.getMinute();
+                int seconds_now = currentTime.getSecond();
 
-                    if (hourss == hour_now && minutess == minute_now && secondss == seconds_now) {
-                        // Chạy bảo trì trong thread riêng
-                        new Thread(() -> {
-                            try {
-                                performMaintenance();
-                            } catch (Exception ex) {
-                                Logger.error("Lỗi thực hiện bảo trì: " + ex.getMessage());
-                            }
-                        }, "MaintenanceThread").start();
-                        timeReached.set(true);
-                    }
-                    Thread.sleep(10000);
-                } catch (Exception e) {
-                    Logger.error("Lỗi trong thread hẹn giờ bảo trì: " + e.getMessage());
-                    e.printStackTrace();
+                if (hourss == hour_now && minutess == minute_now && secondss == seconds_now) {
+                    Threading.runAsync(() -> {
+                        try {
+                            performMaintenance();
+                        } catch (Exception ex) {
+                            Logger.error("Lỗi thực hiện bảo trì: " + ex.getMessage());
+                        }
+                    });
+                    timeReached.set(true);
                 }
+            } catch (Exception e) {
+                Logger.error("Lỗi trong scheduler hẹn giờ bảo trì: " + e.getMessage());
             }
-        }, "ScheduleMaintenanceThread").start();
+        }, 0, 1, java.util.concurrent.TimeUnit.SECONDS);
     }
     
     private void performMaintenance() {

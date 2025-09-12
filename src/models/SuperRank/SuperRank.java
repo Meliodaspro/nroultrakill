@@ -73,7 +73,7 @@ public final class SuperRank implements Runnable {
         if (player.zone.zoneId != zone.zoneId) {
             ChangeMapService.gI().changeZone(player, zone.zoneId);
         }
-        new Thread(this, "Super Rank").start();
+        utils.Threading.runLongLived(this);
     }
 
     @Override

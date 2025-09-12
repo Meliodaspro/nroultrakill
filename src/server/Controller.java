@@ -1038,16 +1038,35 @@ public class Controller implements IMessageHandler {
     private void sendThongBaoServer(Player player) {
         Service.gI().sendThongBaoFromAdmin(player, "|0|❤️Nro ULTRAKILL vừa ra mắt tặng người chơi vô vàn phần quà :\n"
                 + "• >Nhập giftcode tại nhà : \n|4|"
-                + "       - test\n"
-                + "       - \n"
-                + "       - \n"
+                + recentGiftCodes()
+                +"--> \n|4|"
 
                 + "• >️Mở thành viên và nhận giftcode vip tại BARDOCK làng, cày chay thả ga\n|7|"
                 + "• >️Đua top sức mạnh và nạp tại NPC ĐẠI THIÊN SỨ ở các làng nhé!!!\n|0|"
                 + "• >Đội ngũ admin tuy không đẳng cấp lắm nhưng sẽ cố gắng lắng nghe người chơi nhất có thể :3\n"
                 + "--> \n|4|"
                 + "Trò chơi chưa hoàn thiện nên cần nhiều góp ý từ ae, mong mn có thể cùng admin phát triển game ❤️❤️❤️\n"
-                + "Link tải game: ");
+                + "Link tải game: https://nroultrakill.online/ ");
+    }
+
+    private String recentGiftCodes() {
+        try {
+            models.GiftCode.GiftCodeService.gI().updateGiftCode();
+            java.util.List<models.GiftCode.GiftCode> all = models.GiftCode.GiftCodeManager.gI().listGiftCode;
+            if (all.isEmpty()) return "       -\n       -\n       -\n";
+            all.sort((a, b) -> Long.compare(
+                    b.datecreate != null ? b.datecreate.getTime() : 0L,
+                    a.datecreate != null ? a.datecreate.getTime() : 0L));
+            StringBuilder sb = new StringBuilder();
+            int limit = Math.min(3, all.size());
+            for (int i = 0; i < limit; i++) {
+                sb.append("       - ").append(all.get(i).code).append("\n");
+            }
+            for (int i = limit; i < 3; i++) sb.append("       -\n");
+            return sb.toString();
+        } catch (Exception e) {
+            return "       -\n       -\n       -\n";
+        }
     }
 
     private void clearVTSK(Player player) {

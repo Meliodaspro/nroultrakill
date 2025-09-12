@@ -25,7 +25,7 @@ public class PVPManager implements Runnable {
 
     public PVPManager() {
         this.pvps = new ArrayList<>();
-        new Thread(this, "Update pvp").start();
+        utils.Threading.runLongLived(this);
     }
 
     public void removePVP(PVP pvp) {

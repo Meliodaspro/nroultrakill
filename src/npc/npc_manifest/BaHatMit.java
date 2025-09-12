@@ -68,8 +68,21 @@ public class BaHatMit extends Npc {
                     this.createOtherMenu(player, ConstNpc.BASE_MENU, "Ngươi tìm ta có việc gì?", "Quay về", "Từ chối");
                 default -> {
                     List<String> menu = new ArrayList<>(Arrays.asList("Sách\nTuyệt Kỹ", "Cửa hàng\nBùa", "Nâng cấp\nVật phẩm", "Làm phép\nNhập đá", "Nhập\nNgọc Rồng"));
-                    if (InventoryService.gI().findItem(player, 454) || InventoryService.gI().findItem(player, 921)) {
-                        menu = new ArrayList<>(Arrays.asList("Sách\nTuyệt Kỹ", "Cửa hàng\nBùa", "Nâng cấp\nVật phẩm", InventoryService.gI().findItemBongTaiCap2(player) ? "Mở chỉ số\nBông tai\nPorata cấp\n2" : "Nâng cấp\nBông tai\nPorata", "Làm phép\nNhập đá", "Nhập\nNgọc Rồng"));
+                    if (InventoryService.gI().findItem(player, 454) || InventoryService.gI().findItem(player, 921) || InventoryService.gI().findItem(player, 1756)) {
+                        if (InventoryService.gI().findItem(player, 1756)) {
+                            menu = new ArrayList<>(Arrays.asList(
+                                    "Sách\nTuyệt Kỹ", "Cửa hàng\nBùa", "Nâng cấp\nVật phẩm",
+                                    "Mở chỉ số\nBông tai\nPorata cấp\n3",
+                                    "Làm phép\nNhập đá", "Nhập\nNgọc Rồng"));
+                        } else {
+                            menu = new ArrayList<>(Arrays.asList(
+                                    "Sách\nTuyệt Kỹ", "Cửa hàng\nBùa", "Nâng cấp\nVật phẩm",
+                                    InventoryService.gI().findItemBongTaiCap2(player) ? "Mở chỉ số\nBông tai\nPorata cấp\n2" : "Nâng cấp\nBông tai\nPorata",
+                                    "Làm phép\nNhập đá", "Nhập\nNgọc Rồng"));
+                            if (InventoryService.gI().findItem(player, 921)) {
+                                menu.add(3, "Nâng cấp\nBông tai\nPorata cấp 3");
+                            }
+                        }
                     }
                     if (DailyGiftService.checkDailyGift(player, ConstDailyGift.NHAN_BUA_MIEN_PHI)) {
                         menu.add(0, "Thưởng\nBùa 1h\nngẫu nhiên");
@@ -417,13 +430,19 @@ public class BaHatMit extends Npc {
                                 CombineService.gI().openTabCombine(player, CombineService.NANG_CAP_VAT_PHAM);
                                 break;
                             case 4:
-                                if (InventoryService.gI().findItemBongTaiCap2(player)) {
+                                if (InventoryService.gI().findItem(player, 1756)) {
+                                    CombineService.gI().openTabCombine(player, CombineService.NANG_CHI_SO_BONG_TAI3);
+                                } else if (InventoryService.gI().findItemBongTaiCap2(player)) {
                                     CombineService.gI().openTabCombine(player, CombineService.NANG_CHI_SO_BONG_TAI);
                                 } else {
                                     CombineService.gI().openTabCombine(player, CombineService.NANG_CAP_BONG_TAI);
                                 }
                                 break;
                             case 5:
+                                if (InventoryService.gI().findItem(player, 921)) {
+                                    CombineService.gI().openTabCombine(player, CombineService.NANG_CAP_BONG_TAI3);
+                                    break;
+                                }
                                 CombineService.gI().openTabCombine(player, CombineService.LAM_PHEP_NHAP_DA);
                                 break;
                             case 6:

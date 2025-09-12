@@ -274,7 +274,7 @@ public class ShopService {
             msg.writer().writeByte(items.size());
             for (Item item : items) {
                 msg.writer().writeShort(item.template.id);
-                msg.writer().writeUTF("LUCKY DRAGON BALL");
+                msg.writer().writeUTF("ULTRAKILL LEGEND");
                 msg.writer().writeByte(item.itemOptions.size() + 1);
                 for (Item.ItemOption io : item.itemOptions) {
                     msg.writer().writeByte(io.optionTemplate.id);

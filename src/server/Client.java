@@ -39,7 +39,7 @@ public class Client implements Runnable {
     private final List<Player> players = new ArrayList<>();
 
     private Client() {
-        new Thread(this, "Update Client").start();
+        utils.Threading.runLongLived(this);
     }
 
     public List<Player> getPlayers() {

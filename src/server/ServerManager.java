@@ -92,49 +92,45 @@ public class ServerManager {
         isRunning = true;
         activeServerSocket();
         activeCommandLine();
-        new Thread(NgocRongNamecService.gI(), "Update NRNM").start();
-        new Thread(SuperRankManager.gI(), "Update Super Rank").start();
-        new Thread(The23rdMartialArtCongressManager.gI(), "Update DHVT23").start();
-        new Thread(DeathOrAliveArenaManager.gI(), "Update Võ Đài Sinh Tử").start();
-        new Thread(WorldMartialArtsTournamentManager.gI(), "Update WMAT").start();
-        new Thread(AutoMaintenance.gI(), "Update Bảo Trì Tự Động").start();
-        new Thread(ShenronEventManager.gI(), "Update Shenron").start();
+        utils.Threading.runLongLived(NgocRongNamecService.gI());
+        utils.Threading.runLongLived(SuperRankManager.gI());
+        utils.Threading.runLongLived(The23rdMartialArtCongressManager.gI());
+        utils.Threading.runLongLived(DeathOrAliveArenaManager.gI());
+        utils.Threading.runLongLived(WorldMartialArtsTournamentManager.gI());
+        utils.Threading.runLongLived(AutoMaintenance.gI());
+        utils.Threading.runLongLived(ShenronEventManager.gI());
 //        new Thread(UpdateManager.gI(), "Update Manager").start();
 //        new Thread(RemoteServerManager.gI(), "Remote Server Manager").start();
         BossManager.gI().loadBoss();
         Manager.MAPS.forEach(map.Map::initBoss);
         EventManager.gI().init();
-        new Thread(BossManager.gI(), "Update boss").start();
-        new Thread(YardartManager.gI(), "Update yardart boss").start();
-        new Thread(FinalBossManager.gI(), "Update final boss").start();
-        new Thread(SkillSummonedManager.gI(), "Update Skill-summoned boss").start();
-        new Thread(BrolyManager.gI(), "Update broly boss").start();
-        new Thread(AnTromManager.gI(), "Update antrom boss").start();
-        new Thread(OtherBossManager.gI(), "Update other boss").start();
-        new Thread(RedRibbonHQManager.gI(), "Update reb ribbon hq boss").start();
-        new Thread(TreasureUnderSeaManager.gI(), "Update treasure under sea boss").start();
-        new Thread(SnakeWayManager.gI(), "Update snake way boss").start();
-        new Thread(GasDestroyManager.gI(), "Update gas destroy boss").start();
-        new Thread(TrungThuEventManager.gI(), "Update trung thu event boss").start();
-        new Thread(HalloweenEventManager.gI(), "Update halloween event boss").start();
-        new Thread(ChristmasEventManager.gI(), "Update christmas event boss").start();
-        new Thread(HungVuongEventManager.gI(), "Update Hung Vuong event boss").start();
-        new Thread(LunarNewYearEventManager.gI(), "Update lunar new year event boss").start();
-        new Thread(LuckyNumber.gI(), "Update Lucky Number").start();
-        new Thread(DecisionMaker.gI(), "Update Decision Maker").start();
-        new Thread(() -> {
-            while (isRunning) {
-                try {
-                    long st = System.currentTimeMillis();
-                    ConstDataEventSM.isRunningSK = ConstDataEventSM.isActiveEvent();
-                    ConstDataEventNAP.isRunningSK = ConstDataEventNAP.isActiveEvent();
-                    Functions.sleep(Math.max(500 - (System.currentTimeMillis() - st), 10));
-
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+        utils.Threading.runLongLived(BossManager.gI());
+        utils.Threading.runLongLived(YardartManager.gI());
+        utils.Threading.runLongLived(FinalBossManager.gI());
+        utils.Threading.runLongLived(SkillSummonedManager.gI());
+        utils.Threading.runLongLived(BrolyManager.gI());
+        utils.Threading.runLongLived(AnTromManager.gI());
+        utils.Threading.runLongLived(OtherBossManager.gI());
+        utils.Threading.runLongLived(RedRibbonHQManager.gI());
+        utils.Threading.runLongLived(TreasureUnderSeaManager.gI());
+        utils.Threading.runLongLived(SnakeWayManager.gI());
+        utils.Threading.runLongLived(GasDestroyManager.gI());
+        utils.Threading.runLongLived(TrungThuEventManager.gI());
+        utils.Threading.runLongLived(HalloweenEventManager.gI());
+        utils.Threading.runLongLived(ChristmasEventManager.gI());
+        utils.Threading.runLongLived(HungVuongEventManager.gI());
+        utils.Threading.runLongLived(LunarNewYearEventManager.gI());
+        utils.Threading.runLongLived(LuckyNumber.gI());
+        utils.Threading.runLongLived(DecisionMaker.gI());
+        // Chuyển sang scheduler 1s để giảm CPU và tránh vòng lặp bận
+        utils.Threading.scheduler().scheduleAtFixedRate(() -> {
+            try {
+                ConstDataEventSM.isRunningSK = ConstDataEventSM.isActiveEvent();
+                ConstDataEventNAP.isRunningSK = ConstDataEventNAP.isActiveEvent();
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-        }, "Update SK").start();
+        }, 0, 1, java.util.concurrent.TimeUnit.SECONDS);
 
     }
 
@@ -237,9 +233,9 @@ public class ServerManager {
                         Maintenance.gI().start(5);
                     }).start();
                 } else if (line.equals("athread")) {
-                    System.out.println("Số thread hiện tại của Server DONUTS: " + Thread.activeCount());
+                    System.out.println("Số thread hiện tại của Server ULTRAKILL: " + Thread.activeCount());
                 } else if (line.equals("nplayer")) {
-                    System.out.println("Số lượng người chơi hiện tại của Server DONUTS: " + Client.gI().getPlayers().size());
+                    System.out.println("Số lượng người chơi hiện tại của Server ULTRAKILL: " + Client.gI().getPlayers().size());
                 } else if (line.equals("shop")) {
                     Manager.gI().updateShop();
                     System.out.println("===========================DONE UPDATE SHOP===========================");

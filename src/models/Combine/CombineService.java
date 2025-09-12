@@ -22,6 +22,8 @@ import models.Combine.manifest.NangCapSachTuyetKy;
 import models.Combine.manifest.NangCapSaoPhaLe;
 import models.Combine.manifest.NangCapVatPham;
 import models.Combine.manifest.NangChiSoBongTai;
+import models.Combine.manifest.NangCapBongTai3;
+import models.Combine.manifest.NangChiSoBongTai3;
 import models.Combine.manifest.NangGiapLuyenTap;
 import models.Combine.manifest.NhapNgocRong;
 import models.Combine.manifest.PhaLeHoaTrangBi;
@@ -72,6 +74,8 @@ public class CombineService {
     public static final int LAM_PHEP_NHAP_DA = 512;
     public static final int NHAP_NGOC_RONG = 513;
     public static final int NANG_CHI_SO_BONG_TAI = 517;
+    public static final int NANG_CAP_BONG_TAI3 = 530;
+    public static final int NANG_CHI_SO_BONG_TAI3 = 531;
     public static final int NANG_CAP_KICH_HOAT = 518;
     public static final int NANG_CAP_KICH_HOAT_VIP = 519;
 
@@ -132,6 +136,10 @@ public class CombineService {
                 NangCapBongTai.showInfoCombine(player);
             case NANG_CHI_SO_BONG_TAI ->
                 NangChiSoBongTai.showInfoCombine(player);
+            case NANG_CAP_BONG_TAI3 ->
+                NangCapBongTai3.showInfoCombine(player);
+            case NANG_CHI_SO_BONG_TAI3 ->
+                NangChiSoBongTai3.showInfoCombine(player);
             case NANG_CAP_SAO_PHA_LE ->
                 NangCapSaoPhaLe.showInfoCombine(player);
             case DANH_BONG_SAO_PHA_LE ->
@@ -204,6 +212,10 @@ public class CombineService {
                 NangCapBongTai.nangCapBongTai(player);
             case NANG_CHI_SO_BONG_TAI ->
                 NangChiSoBongTai.nangChiSoBongTai(player);
+            case NANG_CAP_BONG_TAI3 ->
+                NangCapBongTai3.nangCapBongTai3(player);
+            case NANG_CHI_SO_BONG_TAI3 ->
+                NangChiSoBongTai3.nangChiSoBongTai3(player);
             case NANG_CAP_SAO_PHA_LE ->
                 NangCapSaoPhaLe.nangCapSaoPhaLe(player);
             case DANH_BONG_SAO_PHA_LE ->
@@ -499,6 +511,10 @@ public class CombineService {
                 "Ta sẽ phù phép\ncho bông tai Porata của ngươi\nthành cấp 2";
             case NANG_CHI_SO_BONG_TAI ->
                 "Ta sẽ phù phép\ncho bông tai Porata cấp 2 của ngươi\ncó 1 chỉ số ngẫu nhiên";
+            case NANG_CAP_BONG_TAI3 ->
+                "Ta sẽ phù phép\ncho bông tai Porata cấp 2 của ngươi\nthành cấp 3";
+            case NANG_CHI_SO_BONG_TAI3 ->
+                "Ta sẽ phù phép\ncho bông tai Porata cấp 3 của ngươi\ncó 1 chỉ số ngẫu nhiên";
             case NANG_CAP_SAO_PHA_LE ->
                 "Ta sẽ phù phép\nnâng cấp Sao Pha Lê\nthành cấp 2";
             case DANH_BONG_SAO_PHA_LE ->
@@ -566,6 +582,10 @@ public class CombineService {
                 "Vào hành trang\nChọn bông tai Porata\nChọn mảnh bông tai để nâng cấp, số lượng 9999 cái\nSau đó chọn 'Nâng cấp'";
             case NANG_CHI_SO_BONG_TAI ->
                 "Vào hành trang\nChọn bông tai Porata\nChọn mảnh hồn porata số lượng 99\ncái và đá xanh lam để nâng cấp.\nSau đó chọn 'Nâng cấp chỉ số'";
+            case NANG_CAP_BONG_TAI3 ->
+                "Vào hành trang\nChọn bông tai Porata cấp 2\nChọn 9999 mảnh vỡ, 99 mảnh hồn và 1 đá xanh lam\nSau đó chọn 'Nâng cấp'";
+            case NANG_CHI_SO_BONG_TAI3 ->
+                "Vào hành trang\nChọn bông tai Porata cấp 3\nChọn 99 mảnh hồn và 1 đá xanh lam\nSau đó chọn 'Nâng cấp chỉ số'";
             case NANG_CAP_SAO_PHA_LE ->
                 "Vào hành trang\nChọn đá Hematite\nChọn loại sao pha lê (cấp 1)\nSau đó chọn 'Nâng cấp'";
             case DANH_BONG_SAO_PHA_LE ->

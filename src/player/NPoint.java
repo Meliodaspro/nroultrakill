@@ -381,6 +381,35 @@ public class NPoint {
             });
         }
 
+        // Bông tai cấp 3: xử lý giống cấp 2 nhưng đọc từ item Porata 3 (ID 1756),
+        // đồng thời cộng thêm 10% trên từng chỉ số của Porata 2 (nếu không có 921, lấy theo chính 1756)
+        if (this.player.fusion.typeFusion == ConstPlayer.HOP_THE_PORATA3) {
+            // Áp option của Porata 3 (nếu có) – giống cấp 2 nhưng dùng ID 1756
+            Item btc3Ref = null;
+            for (Item it : this.player.inventory.itemsBag) {
+                if (it.isNotNullItem() && it.template.id == 1756) { btc3Ref = it; break; }
+            }
+            if (btc3Ref == null && this.player.inventory.itemsBody.size() > 0) {
+                for (Item it : this.player.inventory.itemsBody) {
+                    if (it.isNotNullItem() && it.template.id == 1756) { btc3Ref = it; break; }
+                }
+            }
+            if (btc3Ref != null) {
+                for (ItemOption io : btc3Ref.itemOptions) {
+                    addOption(io);
+                    if (io.optionTemplate.id == 72) {
+                        this.levelBT = io.param;
+                    }
+                }
+            }
+            // Cộng riêng +10% các chỉ số nền (không phụ thuộc 921)
+            this.tlHp.add(10);
+            this.tlMp.add(10);
+            this.tlDame.add(10);
+            this.tlDef.add(10);
+            this.critAdd += 10;
+        }
+
         if (BagesTemplate.sendListItemOption(player) != null) {
             for (ItemOption io : BagesTemplate.sendListItemOption(player)) {
                 addOption(io);
@@ -1821,7 +1850,7 @@ public class NPoint {
     }
 
     public long calSubTNSM(long tiemNang) {
-        tiemNang = (long) (tiemNang * 5);
+        tiemNang = (long) (tiemNang * 2);
         if (player.nPoint.power >= 80_000_000_000L) {
             tiemNang = tiemNang / 60;
         } else if (player.nPoint.power >= 60_000_000_000L) {

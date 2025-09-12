@@ -75,7 +75,7 @@ import java.util.HashMap;
             /*     */        }
         /*  66 */ this.start = true;
         /*  67 */ this.loopServer.start();
-        /*  68 */ System.out.println("Server Girlkun đang chạy tại port " + this.port);
+        /*  68 */ System.out.println("Server Ultrakill đang chạy tại port " + this.port);
         /*  69 */ return this;
         /*     */    }
 
@@ -93,7 +93,7 @@ import java.util.HashMap;
         /*  82 */ if (this.serverClose != null) {
             /*  83 */ this.serverClose.serverClose();
             /*     */        }
-        /*  85 */ System.out.println("Server Girlkun đã đóng!");
+        /*  85 */ System.out.println("Server ULTRAKILL đã đóng!");
         /*  86 */ return this;
         /*     */    }
 

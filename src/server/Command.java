@@ -158,7 +158,7 @@ public class Command {
                 return true;
             } else if (text.equals("admin")) {
                 NpcService.gI().createMenuConMeo(player, ConstNpc.MENU_ADMIN, -1, "|0|Time start: " + ServerManager.timeStart + "\nClients: " + Client.gI().getPlayers().size() + " người chơi\n Sessions: " + SessionManager.gI().getNumSession() + "\nThreads: " + Thread.activeCount() + " luồng" + "\n" + SystemMetrics.ToString(),
-                        "Ngọc rồng", "Đệ tử", "Bảo trì", "Tìm kiếm\nngười chơi", "Boss", "Call Broly","Buff VND","Buff\nhộp thư", "Đóng");
+                        "Ngọc rồng", "Đệ tử", "Bảo trì", "Tìm kiếm\nngười chơi", "Boss", "Call Broly","Buff VND","Buff\nhộp thư", "Buff toàn\nserver", "Đóng");
                 return true;
             } else if (text.equals("daucatmoi")) {
                 for (int i = 0; i < 10; i++) {
@@ -285,6 +285,9 @@ public class Command {
                 return true;
             } else if (text.equals("getitem")) {
                 Input.gI().createFormGetItem(player);
+                return true;
+            } else if (text.equals("buffall")) {
+                Input.gI().createFormBuffAllServer(player);
                 return true;
             } else if (text.equals("d")) {
                 Service.gI().setPos(player, player.location.x, player.location.y + 10);

@@ -198,7 +198,7 @@ public class TreasureUnderSea implements Runnable {
                 }
             }
         }
-        new Thread(this, "Bản Đồ Kho Báu: " + this.clan.name).start();
+        utils.Threading.runLongLived(this);
     }
 
     //kết thúc bản đồ kho báu

@@ -57,7 +57,7 @@ public class BlackBallWar implements Runnable {
     }
 
     private void start() {
-        new Thread(this, "Update Black Ball War Map " + zone.map.mapName + " Zone " + zone.zoneId).start();
+        utils.Threading.runLongLived(this);
     }
 
     @Override

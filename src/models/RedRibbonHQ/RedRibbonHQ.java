@@ -215,7 +215,7 @@ public class RedRibbonHQ implements Runnable {
                 }
             }
         }
-        new Thread(this, "Doanh Trại: " + this.clan.name).start();
+        utils.Threading.runLongLived(this);
     }
 
     public void update() {
