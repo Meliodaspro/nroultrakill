@@ -23,6 +23,7 @@ import services.TaskService;
 import services.ItemMapService;
 import services.PlayerService;
 import services.FriendAndEnemyService;
+import services.WeeklyRewardService;
 import jdbc.DBConnecter;
 import jdbc.NDVResultSet;
 import utils.Util;
@@ -748,6 +749,16 @@ public class Controller implements IMessageHandler {
                         }
 
 //                        player.achievement.receiveGem(index);
+                    }
+                    break;
+                case 71: // Quà nạp tuần (Weekly Reward)
+                    if (player != null) {
+                        WeeklyRewardService.gI().handleCommand(player, _msg);
+                    }
+                    break;
+                case 70: // Tầm Bảo (Gacha)
+                    if (player != null) {
+                        services.TamBaoService.gI().handle(player, _msg);
                     }
                     break;
                 default:

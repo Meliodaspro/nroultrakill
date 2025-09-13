@@ -282,4 +282,24 @@ public class TimeUtil {
         return minutes + " m " + seconds + " s";
     }
 
+    /**
+     * Lấy thời gian bắt đầu tuần (thứ 2 00:00:00)
+     * @return timestamp milliseconds của thứ 2 đầu tuần
+     */
+    public static long getStartOfWeek() {
+        Calendar calendar = Calendar.getInstance();
+        
+        // Đặt về thứ 2 (Calendar.MONDAY = 2)
+        int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
+        int daysToSubtract = (dayOfWeek == Calendar.SUNDAY) ? 6 : dayOfWeek - Calendar.MONDAY;
+        
+        calendar.add(Calendar.DAY_OF_MONTH, -daysToSubtract);
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+        
+        return calendar.getTimeInMillis();
+    }
+
 }

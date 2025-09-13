@@ -945,6 +945,35 @@ public class NDVSqlFetcher {
 
             //data PK Commeson
             player.lastPkCommesonTime = rs.getLong("lasttimepkcommeson");
+            
+            // Tầm Bảo data
+            try {
+                player.tambao_no = rs.getInt("tambao_no");
+            } catch (Exception e) {
+                player.tambao_no = 0;
+            }
+            try {
+                player.tambao_last_rewards = rs.getString("tambao_last_rewards");
+            } catch (Exception e) {
+                player.tambao_last_rewards = null;
+            }
+            try {
+                player.tambao_last_ts = rs.getLong("tambao_last_ts");
+            } catch (Exception e) {
+                player.tambao_last_ts = 0;
+            }
+            try {
+                player.tambao_pity_count = rs.getInt("tambao_pity_count");
+            } catch (Exception e) {
+                player.tambao_pity_count = 0;
+            }
+            
+            // Weekly Reward data
+            try {
+                player.weekly_nap = rs.getLong("weekly_nap");
+            } catch (Exception e) {
+                player.weekly_nap = 0;
+            }
 
             //Data BDKB
             try {

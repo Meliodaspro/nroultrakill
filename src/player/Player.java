@@ -257,6 +257,15 @@ public class Player implements Runnable {
     public PointFusion pointfusion;
     public List<Archivement> archivementList = new ArrayList<>();
     public List<ArchivementSucManh> archivementListSM = new ArrayList<>();
+    
+    // Tầm Bảo fields
+    public int tambao_no = 0;
+    public String tambao_last_rewards = null;
+    public long tambao_last_ts = 0;
+    public int tambao_pity_count = 0; // Đếm số lần quay để pity
+    
+    // Weekly Reward fields
+    public long weekly_nap = 0;
 
     public boolean isHoldNamecBallTranhDoat;
     public int tempIdNamecBallHoldTranhDoat = -1;

@@ -94,6 +94,18 @@ public class Command {
                 DataGame.reloadVersions();
                 Service.gI().sendThongBao(player, "Đã reload data versions từ config!");
                 return true;
+            } else if (text.equals("reloadtambao")) {
+                services.TamBaoService.gI().reloadPools();
+                Service.gI().sendThongBao(player, "Đã reload dữ liệu Tầm Bảo từ database!");
+                return true;
+            } else if (text.equals("reloadnaptuan")) {
+                services.WeeklyRewardService.gI().reloadWeeklyRewards();
+                Service.gI().sendThongBao(player, "Đã reload dữ liệu Quà Nạp Tuần từ database!");
+                return true;
+            } else if (text.equals("resetnaptuan")) {
+                services.WeeklyRewardService.gI().resetWeeklyRewards();
+                Service.gI().sendThongBao(player, "Đã reset quà nạp tuần - tất cả player có thể nhận lại!");
+                return true;
             } else if (text.startsWith("sp")) {
                 try {
                     long power = Long.parseLong(text.replaceAll("sp", ""));

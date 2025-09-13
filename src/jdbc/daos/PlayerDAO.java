@@ -147,6 +147,24 @@ public class PlayerDAO {
                 options.clear();
                 item.clear();
             }
+            for (int i = 0; i < 20; i++) {
+                if (i == 0) { //thỏi vàng
+                    opt.add(30); //id option
+                    opt.add(1); //param option
+                    item.add(457); //id item
+                    item.add(2000); //số lượng
+                    options.add(opt.toJSONString());
+                    opt.clear();
+                } else {
+                    item.add(-1); //id item
+                    item.add(0); //số lượng
+                }
+                item.add(options.toJSONString()); //full option item
+                item.add(System.currentTimeMillis()); //thời gian item được tạo
+                dataArray.add(item.toJSONString());
+                options.clear();
+                item.clear();
+            }
 
             String itemsBag = dataArray.toJSONString();
             dataArray.clear();
@@ -1304,7 +1322,7 @@ public class PlayerDAO {
                     opt.add(30); //id option
                     opt.add(1); //param option
                     item.add(457); //id item
-                    item.add(10); //số lượng
+                    item.add(1); //số lượng
                     options.add(opt.toJSONString());
                     opt.clear();
                 } else {

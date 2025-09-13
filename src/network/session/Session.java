@@ -206,19 +206,13 @@ public class Session
 //            } catch (IOException iOException) {
 //            }
 //        }
-        if (this.socket != null) {
+        // Thread-safe socket close to avoid NPE when other threads nullify socket
+        Socket s = this.socket;
+        if (s != null) {
             try {
-                String ip = socket.getInetAddress().getHostAddress();
-//                if (EMTIServer.firewall.containsKey(ip)) {
-//                    int count = EMTIServer.firewall.get(ip);
-//                    if (count > 0) {
-//                        EMTIServer.firewall.put(ip, count - 1);
-//                    } else {
-//                        EMTIServer.firewall.remove(ip);
-//                    }
-//                }
-
-                this.socket.close();
+                this.socket = null; // prevent races with other threads
+                // String ip = s.getInetAddress().getHostAddress();
+                s.close();
             } catch (IOException ex) {ex.printStackTrace();
                 Logger.getLogger(Session.class.getName()).log(Level.SEVERE, null, ex);
             }
