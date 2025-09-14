@@ -579,7 +579,7 @@ public class CombineService {
             case NANG_CAP_VAT_PHAM ->
                 "Vào hành trang\nChọn trang bị\n(Áo,quần,găng,giày hoặc rađa)\nChọn loại đá để nâng cấp\nSau đó chọn 'Nâng cấp'";
             case NANG_CAP_BONG_TAI ->
-                "Vào hành trang\nChọn bông tai Porata\nChọn mảnh bông tai để nâng cấp, số lượng 9999 cái\nSau đó chọn 'Nâng cấp'";
+                "Vào hành trang\nChọn bông tai Porata\nChọn mảnh bông tai để nâng cấp, số lượng 999 cái\nSau đó chọn 'Nâng cấp'";
             case NANG_CHI_SO_BONG_TAI ->
                 "Vào hành trang\nChọn bông tai Porata\nChọn mảnh hồn porata số lượng 99\ncái và đá xanh lam để nâng cấp.\nSau đó chọn 'Nâng cấp chỉ số'";
             case NANG_CAP_BONG_TAI3 ->

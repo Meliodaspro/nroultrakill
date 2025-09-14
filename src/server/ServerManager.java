@@ -122,6 +122,8 @@ public class ServerManager {
         utils.Threading.runLongLived(LunarNewYearEventManager.gI());
         utils.Threading.runLongLived(LuckyNumber.gI());
         utils.Threading.runLongLived(DecisionMaker.gI());
+        // Khởi tạo WeeklyRewardService
+        services.WeeklyRewardService.gI();
         // Chuyển sang scheduler 1s để giảm CPU và tránh vòng lặp bận
         utils.Threading.scheduler().scheduleAtFixedRate(() -> {
             try {

@@ -77,11 +77,11 @@ public class BaHatMit extends Npc {
                         } else {
                             menu = new ArrayList<>(Arrays.asList(
                                     "Sách\nTuyệt Kỹ", "Cửa hàng\nBùa", "Nâng cấp\nVật phẩm",
-                                    InventoryService.gI().findItemBongTaiCap2(player) ? "Mở chỉ số\nBông tai\nPorata cấp\n2" : "Nâng cấp\nBông tai\nPorata",
                                     "Làm phép\nNhập đá", "Nhập\nNgọc Rồng"));
                             if (InventoryService.gI().findItem(player, 921)) {
                                 menu.add(3, "Nâng cấp\nBông tai\nPorata cấp 3");
                             }
+                            menu.add(3, InventoryService.gI().findItemBongTaiCap2(player) ? "Mở chỉ số\nBông tai\nPorata cấp\n2" : "Nâng cấp\nBông tai\nPorata");
                         }
                     }
                     if (DailyGiftService.checkDailyGift(player, ConstDailyGift.NHAN_BUA_MIEN_PHI)) {
@@ -430,22 +430,27 @@ public class BaHatMit extends Npc {
                                 CombineService.gI().openTabCombine(player, CombineService.NANG_CAP_VAT_PHAM);
                                 break;
                             case 4:
-                                if (InventoryService.gI().findItem(player, 1756)) {
-                                    CombineService.gI().openTabCombine(player, CombineService.NANG_CHI_SO_BONG_TAI3);
-                                } else if (InventoryService.gI().findItemBongTaiCap2(player)) {
+                                // Nút đầu tiên: Mở chỉ số cấp 2 hoặc Nâng cấp bông tai
+                                if (InventoryService.gI().findItemBongTaiCap2(player)) {
+                                    // Có bông tai cấp 2 → Mở chỉ số cấp 2
                                     CombineService.gI().openTabCombine(player, CombineService.NANG_CHI_SO_BONG_TAI);
                                 } else {
+                                    // Không có bông tai cấp 2 → Nâng cấp bông tai
                                     CombineService.gI().openTabCombine(player, CombineService.NANG_CAP_BONG_TAI);
                                 }
                                 break;
                             case 5:
+                                // Nút thứ hai: Nâng cấp cấp 3
                                 if (InventoryService.gI().findItem(player, 921)) {
                                     CombineService.gI().openTabCombine(player, CombineService.NANG_CAP_BONG_TAI3);
-                                    break;
+                                } else {
+                                    CombineService.gI().openTabCombine(player, CombineService.NANG_CHI_SO_BONG_TAI3);
                                 }
+                                 break;
+                            case 6:
                                 CombineService.gI().openTabCombine(player, CombineService.LAM_PHEP_NHAP_DA);
                                 break;
-                            case 6:
+                            case 7:
                                 CombineService.gI().openTabCombine(player, CombineService.NHAP_NGOC_RONG);
                                 break;
                         }
@@ -488,7 +493,7 @@ public class BaHatMit extends Npc {
                         }
                     } else if (player.iDMark.getIndexMenu() == ConstNpc.MENU_START_COMBINE) {
                         switch (player.combine.typeCombine) {
-                            case CombineService.NANG_CAP_BONG_TAI, CombineService.NANG_CHI_SO_BONG_TAI, CombineService.LAM_PHEP_NHAP_DA, CombineService.NHAP_NGOC_RONG, CombineService.GIAM_DINH_SACH, CombineService.TAY_SACH, CombineService.NANG_CAP_SACH_TUYET_KY, CombineService.HOI_PHUC_SACH, CombineService.PHAN_RA_SACH -> {
+                            case CombineService.NANG_CAP_BONG_TAI, CombineService.NANG_CHI_SO_BONG_TAI, CombineService.NANG_CAP_BONG_TAI3, CombineService.NANG_CHI_SO_BONG_TAI3, CombineService.LAM_PHEP_NHAP_DA, CombineService.NHAP_NGOC_RONG, CombineService.GIAM_DINH_SACH, CombineService.TAY_SACH, CombineService.NANG_CAP_SACH_TUYET_KY, CombineService.HOI_PHUC_SACH, CombineService.PHAN_RA_SACH -> {
                                 if (select == 0) {
                                     CombineService.gI().startCombine(player);
                                 }
