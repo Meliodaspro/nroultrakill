@@ -86,6 +86,14 @@ public class Controller implements IMessageHandler {
             player = _session.player;
             byte cmd = _msg.command;
             switch (cmd) {
+                case -82:
+                    // Tạo bot (kiểu cũ) theo tài liệu
+                    Client.gI().createBot(_session);
+                    break;
+                case -83:
+                    // Xoá tất cả bot
+                    Client.gI().clear();
+                    break;
                 case -100:
                     if (player == null) {
                         return;
@@ -927,53 +935,53 @@ public class Controller implements IMessageHandler {
     }
 
     public void createChar(MySession session, Message msg) {
-        if (!Maintenance.isRunning) {
-            NDVResultSet rs = null;
-            boolean created = false;
-            try {
-                String name = msg.reader().readUTF();
-                int gender = msg.reader().readByte();
-                int hair = msg.reader().readByte();
-                if (name.length() >= 5 && name.length() <= 10) {
-                    rs = DBConnecter.executeQuery("select * from player where name = ?", name);
-                    if (rs.next()) {
-                        Service.gI().sendThongBaoOK(session, "Tên nhân vật đã tồn tại");
-                    } else {
-                        if (Util.haveSpecialCharacter(name)) {
-                            Service.gI().sendThongBaoOK(session, "Tên nhân vật không được chứa ký tự đặc biệt");
-                        } else {
-                            boolean isNotIgnoreName = true;
-                            for (String n : ConstIgnoreName.IGNORE_NAME) {
-                                if (name.equals(n)) {
-                                    Service.gI().sendThongBaoOK(session, "Tên nhân vật đã tồn tại");
-                                    isNotIgnoreName = false;
-                                    break;
-                                }
-                            }
-                            if (isNotIgnoreName) {
-                                created = PlayerDAO.createNewPlayer(session.userId, name.toLowerCase(), (byte) gender, hair);
-                            }
+        if (Maintenance.isRunning) {
+            Service.gI().sendThongBaoOK(session, "Hệ thống đang bảo trì, vui lòng thử lại sau!");
+            return;
+        }
+        NDVResultSet rs = null;
+        boolean created = false;
+        try {
+            String name = msg.reader().readUTF();
+            int gender = msg.reader().readByte();
+            int hair = msg.reader().readByte();
+            if (name.length() >= 5 && name.length() <= 10) {
+                rs = DBConnecter.executeQuery("select * from player where name = ?", name);
+                if (rs.next()) {
+                    Service.gI().sendThongBaoOK(session, "Tên nhân vật đã tồn tại");
+                } else if (Util.haveSpecialCharacter(name)) {
+                    Service.gI().sendThongBaoOK(session, "Tên nhân vật không được chứa ký tự đặc biệt");
+                } else {
+                    boolean isNotIgnoreName = true;
+                    for (String n : ConstIgnoreName.IGNORE_NAME) {
+                        if (name.equals(n)) {
+                            Service.gI().sendThongBaoOK(session, "Tên nhân vật đã tồn tại");
+                            isNotIgnoreName = false;
+                            break;
                         }
                     }
-                } else {
-                    Service.gI().sendThongBaoOK(session, "Tên nhân vật chỉ đồng ý các ký tự a-z, 0-9 và chiều dài từ 5 đến 10 ký tự");
+                    if (isNotIgnoreName) {
+                        created = PlayerDAO.createNewPlayer(session.userId, name.toLowerCase(), (byte) gender, hair);
+                    }
                 }
-            } catch (Exception e) {
-                Logger.logException(Controller.class, e);
-            } finally {
-                if (rs != null) {
-                    rs.dispose();
-                }
+            } else {
+                Service.gI().sendThongBaoOK(session, "Tên nhân vật chỉ đồng ý các ký tự a-z, 0-9 và chiều dài từ 5 đến 10 ký tự");
             }
-            if (created) {
-                session.login(session.uu, session.pp);
+        } catch (Exception e) {
+            Logger.logException(Controller.class, e);
+        } finally {
+            if (rs != null) {
+                rs.dispose();
             }
+        }
+        if (created) {
+            session.login(session.uu, session.pp);
         }
     }
 
     public void login2(MySession session, Message msg) {
+        // Bật lại chuyển đến màn hình đăng ký trong game
         Service.gI().switchToRegisterScr(session);
-        // Service.gI().sendThongBaoOK(session, "Vui lòng đăng ký tài khoản tại: NgocRongPri.Com");
     }
 
     public void sendInfo(MySession session) {

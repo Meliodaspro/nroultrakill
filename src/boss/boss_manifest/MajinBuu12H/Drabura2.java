@@ -50,11 +50,13 @@ public class Drabura2 extends Boss {
         plKill.fightMabu.changePoint((byte) 10);
         TaskService.gI().checkDoneTaskKillBoss(plKill, this);
         //        sự kiện
-//        sự kiện
-        int quantity = 1;
-        ItemMap item1743 = new ItemMap(this.zone, 1743, quantity, this.location.x,
-                this.zone.map.yPhysicInTop(this.location.x, this.location.y - 24), plKill.id);
-        Service.gI().dropItemMap(this.zone, item1743);
+//        sự kiện - 0.1%
+        if (Util.isTrue(1, 1000)) {
+            int quantity = Util.nextInt(1,2);
+            ItemMap item1743 = new ItemMap(this.zone, 1743, quantity, this.location.x,
+                    this.zone.map.yPhysicInTop(this.location.x, this.location.y - 24), plKill.id);
+            Service.gI().dropItemMap(this.zone, item1743);
+        }
     }
 
     @Override

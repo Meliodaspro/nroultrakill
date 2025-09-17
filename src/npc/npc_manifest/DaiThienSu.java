@@ -87,7 +87,7 @@ public class DaiThienSu extends Npc {
                             ResultSet rs = null;
                             StringBuilder sb = new StringBuilder();
                             sb.append("|0|꧁TOP SỨC MẠNH:\n"
-                                    + "Chỉ dành cho những tài khoản tạo từ thời điểm " + ConstDataEventSM.HOUR_OPEN + "H" + ConstDataEventSM.MIN_OPEN + " ngày " + ConstDataEventSM.DATE_OPEN + "/" + ConstDataEventSM.MONTH_OPEN + "/2024\n"
+                                    + "Chỉ dành cho những tài khoản tạo từ thời điểm " + ConstDataEventSM.HOUR_OPEN + "H" + ConstDataEventSM.MIN_OPEN + " ngày " + ConstDataEventSM.DATE_OPEN + "/" + ConstDataEventSM.MONTH_OPEN + "/2025\n"
                                     + "Nhận quà vào ngày " + ConstDataEventSM.HOUR_END + "H" + ConstDataEventSM.MIN_END + " ngày " + ConstDataEventSM.DATE_END + "/" + ConstDataEventSM.MONTH_END + "/2025,  Quà sẽ về hộp thư người chơi꧂\n");
                             try ( Connection con2 = DBConnecter.getConnectionServer()) {
                                 ps = con2.prepareStatement("SELECT * FROM moc_suc_manh_top");

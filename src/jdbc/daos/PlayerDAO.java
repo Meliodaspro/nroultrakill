@@ -15,6 +15,7 @@ import player.Friend;
 import player.Fusion;
 import player.Inventory;
 import player.Player;
+import server.Client;
 import skill.Skill;
 import services.MapService;
 import utils.Logger;
@@ -372,6 +373,9 @@ public class PlayerDAO {
     }
 
     public static void updatePlayer(Player player) {
+        if (player != null && player.isBot) {
+            return;
+        }
         if (player != null && player.iDMark.isLoadedAllDataPlayer()) {
             long st = System.currentTimeMillis();
             try {
@@ -1146,13 +1150,15 @@ public class PlayerDAO {
         }
     }
  public static boolean sds(Player player, int num) {
-        String updateQuery = "UPDATE account SET danap = danap + ? WHERE id = ?";
+        String updateQuery = "UPDATE account SET danap = danap + ?, weekly_nap = weekly_nap + ? WHERE id = ?";
         try ( Connection con = DBConnecter.getConnectionServer();  PreparedStatement ps = con.prepareStatement(updateQuery)) {
             ps.setInt(1, num);
-            ps.setInt(2, player.getSession().userId);
+            ps.setInt(2, num); // Cập nhật weekly_nap
+            ps.setInt(3, player.getSession().userId);
             int rowsAffected = ps.executeUpdate();
             if (rowsAffected > 0) {
                 player.getSession().danap += num;
+                player.weekly_nap += num; // Cập nhật weekly_nap cho player online
                 return true;
             } else {
                 return false;
@@ -1163,12 +1169,20 @@ public class PlayerDAO {
         }
     }
     public static boolean addcash(int id, int num) {
-        String updateQuery = "UPDATE account SET cash = cash + ?, danap = danap + ? WHERE id = ?";
+        String updateQuery = "UPDATE account SET cash = cash + ?, danap = danap + ?, weekly_nap = weekly_nap + ? WHERE id = ?";
         try ( Connection con = DBConnecter.getConnectionServer();  PreparedStatement ps = con.prepareStatement(updateQuery)) {
             ps.setInt(1, num);
             ps.setInt(2, num);
-            ps.setInt(3, id);
+            ps.setInt(3, num); // Cập nhật weekly_nap
+            ps.setInt(4, id);
             ps.executeUpdate();
+            
+            // Cập nhật weekly_nap cho player đang online nếu có
+            Player onlinePlayer = Client.gI().getPlayerByUser(id);
+            if (onlinePlayer != null) {
+                onlinePlayer.weekly_nap += num;
+            }
+            
             return true;
         } catch (SQLException e) {
             Logger.error(" Lỗi của EMTI ở hàm addcash");

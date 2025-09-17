@@ -45,11 +45,13 @@ public class BuiBui2 extends Boss {
     public void reward(Player plKill) {
         plKill.fightMabu.changePoint((byte) 10);
         TaskService.gI().checkDoneTaskKillBoss(plKill, this);
-//        sự kiện
-        int quantity = 1;
-        ItemMap item1743 = new ItemMap(this.zone, 1743, quantity, this.location.x,
-                this.zone.map.yPhysicInTop(this.location.x, this.location.y - 24), plKill.id);
-        Service.gI().dropItemMap(this.zone, item1743);
+//        sự kiện - 0.1%
+        if (Util.isTrue(1, 1000)) {
+            int quantity = Util.nextInt(1,2);
+            ItemMap item1743 = new ItemMap(this.zone, 1743, quantity, this.location.x,
+                    this.zone.map.yPhysicInTop(this.location.x, this.location.y - 24), plKill.id);
+            Service.gI().dropItemMap(this.zone, item1743);
+        }
     }
 
     private void slowPlayerInMap() {

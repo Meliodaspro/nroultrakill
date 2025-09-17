@@ -24,11 +24,13 @@ public class Poc extends Boss {
 
     @Override
     public void reward(Player plKill) {
-        // Sự kiện
+        // Sự kiện 0.1%
+        if (Util.isTrue(1, 1000)) { 
         int quantity = 1;
         ItemMap item1743 = new ItemMap(this.zone, 1743, quantity, this.location.x,
                 this.zone.map.yPhysicInTop(this.location.x, this.location.y - 24), plKill.id);
         Service.gI().dropItemMap(this.zone, item1743);
+        }
         if (Util.isTrue(5, 50)) {
             for (int i = 0; i < Util.nextInt(25, 50); i++) {
                 ItemMap it = new ItemMap(this.zone, 1229, 1, this.location.x + Util.nextInt(-15, 15), this.zone.map.yPhysicInTop(this.location.x, this.location.y - 24), plKill.id);

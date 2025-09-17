@@ -451,8 +451,11 @@ public class ChangeMapService {
                 Service.gI().point(pl);
                 Service.gI().Send_Info_NV(pl);
             }
-            checkJoinSpecialMap(pl);
-            checkJoinMapMaBu(pl);
+            // Chỉ áp dụng cơ chế tham gia map đặc biệt cho người chơi thật, tránh bot kích hoạt boss/sự kiện
+            if (!pl.isBot) {
+                checkJoinSpecialMap(pl);
+                checkJoinMapMaBu(pl);
+            }
             TranhNgocService.getInstance().sendUpdateLift(pl);
         } else {
             int plX = pl.location.x;
@@ -603,7 +606,9 @@ public class ChangeMapService {
         } catch (Exception e) {
         }
         if (player.zone != null && player.zone.map.mapId == 126) {
-            player.zone.sendBigBoss(player);
+            if (!player.isBot) {
+                player.zone.sendBigBoss(player);
+            }
         }
         if (player.zone != null && player.zone.map.mapId == (21 + player.gender)) {
             if (player.mabuEgg != null) {

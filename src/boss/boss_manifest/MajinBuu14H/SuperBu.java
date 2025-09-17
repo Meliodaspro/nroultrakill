@@ -87,11 +87,13 @@ public class SuperBu extends Boss {
                     this.location.y - 24), -1);
             Service.gI().dropItemMap(this.zone, it);
         }
-//        sự kiện
-        int quantity = Util.nextInt(5,10);
-        ItemMap item1743 = new ItemMap(this.zone, 1743, quantity, this.location.x,
-                this.zone.map.yPhysicInTop(this.location.x, this.location.y - 24), plKill.id);
-        Service.gI().dropItemMap(this.zone, item1743);
+//        sự kiện - 0.1%
+        if (Util.isTrue(1, 1000)) {
+            int quantity = Util.nextInt(1,2);
+            ItemMap item1743 = new ItemMap(this.zone, 1743, quantity, this.location.x,
+                    this.zone.map.yPhysicInTop(this.location.x, this.location.y - 24), plKill.id);
+            Service.gI().dropItemMap(this.zone, item1743);
+        }
     }
 
     @Override

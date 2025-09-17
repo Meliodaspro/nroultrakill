@@ -97,8 +97,13 @@ public class ConsignShopService {
     }
 
     public void buyItem(Player pl, int id) {
-        if (pl.getSession().actived && pl.nPoint.power < 17000000000L) {
-            Service.gI().sendThongBao(pl, "Yêu cầu Kích hoạt tài khoản và sức mạnh lớn hơn 17 tỷ");
+        // Kiểm tra trạng thái active
+        if (!pl.actived()) {
+            Service.gI().sendThongBao(pl, "Chỉ tài khoản đã kích hoạt mới có thể sử dụng chức năng ký gửi");
+            return;
+        }
+        if (pl.nPoint.power < 17000000000L) {
+            Service.gI().sendThongBao(pl, "Yêu cầu sức mạnh lớn hơn 17 tỷ để mua vật phẩm");
             this.openShopKyGui(pl);
             return;
         }
@@ -174,6 +179,11 @@ public class ConsignShopService {
     }
 
     public void openShopKyGui(Player pl, byte index, int page) {
+        // Kiểm tra trạng thái active
+        if (!pl.actived()) {
+            Service.gI().sendThongBao(pl, "Chỉ tài khoản đã kích hoạt mới có thể sử dụng chức năng ký gửi");
+            return;
+        }
         if (page > getItemKyGui(index).size()) {
             return;
         }
@@ -241,6 +251,11 @@ public class ConsignShopService {
     }
 
     public void upItemToTop(Player pl, int id) {
+        // Kiểm tra trạng thái active
+        if (!pl.actived()) {
+            Service.gI().sendThongBao(pl, "Chỉ tài khoản đã kích hoạt mới có thể sử dụng chức năng ký gửi");
+            return;
+        }
         ConsignItem it = getItemBuy(id);
         if (it == null || it.isBuy) {
             Service.gI().sendThongBao(pl, "Vật phẩm không tồn tại hoặc đã được bán");
@@ -256,6 +271,11 @@ public class ConsignShopService {
     }
 
     public void claimOrDel(Player pl, byte action, int id) {
+        // Kiểm tra trạng thái active
+        if (!pl.actived()) {
+            Service.gI().sendThongBao(pl, "Chỉ tài khoản đã kích hoạt mới có thể sử dụng chức năng ký gửi");
+            return;
+        }
         ConsignItem it = getItemBuy(pl, id);
         switch (action) {
             case 1: // hủy vật phẩm
@@ -355,6 +375,11 @@ public class ConsignShopService {
 
     public void KiGui(Player pl, int id, int money, byte moneyType, int quantity) {
         try {
+            // Kiểm tra trạng thái active
+            if (!pl.actived()) {
+                Service.gI().sendThongBao(pl, "Chỉ tài khoản đã kích hoạt mới có thể sử dụng chức năng ký gửi");
+                return;
+            }
             if (pl.inventory.gem < 5) {
                 Service.gI().sendThongBao(pl, "Bạn cần có ít nhất 5 ngọc xanh để làm phí đăng bán");
                 return;
@@ -407,6 +432,11 @@ public class ConsignShopService {
     }
 
     public void openShopKyGui(Player pl) {
+        // Kiểm tra trạng thái active
+        if (!pl.actived()) {
+            Service.gI().sendThongBao(pl, "Chỉ tài khoản đã kích hoạt mới có thể sử dụng chức năng ký gửi");
+            return;
+        }
         Message msg = null;
         try {
             msg = new Message(-44);

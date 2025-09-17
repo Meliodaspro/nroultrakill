@@ -91,6 +91,7 @@ public final class Manager {
     public static final List<ArrHead2Frames> ARR_HEAD_2_FRAMES = new ArrayList<>();
     public static final Map<String, Byte> IMAGES_BY_NAME = new HashMap<>();
     public static final List<ItemTemplate> ITEM_TEMPLATES = new ArrayList<>();
+    public static final List<Item> CAITRANG = new ArrayList<>();
     public static final List<MobTemplate> MOB_TEMPLATES = new ArrayList<>();
     public static final List<NpcTemplate> NPC_TEMPLATES = new ArrayList<>();
     public static final List<TaskMain> TASKS = new ArrayList<>();

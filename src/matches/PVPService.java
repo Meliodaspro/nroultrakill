@@ -55,7 +55,7 @@ public class PVPService {
                 case 3:
                     switch (action) {
                         case OPEN_GOLD_SELECT:
-                            if (Client.gI().getPlayer(playerId) == null) {
+                            if (plMap == null || plMap.isBot || Client.gI().getPlayer(playerId) == null) {
                                 if (plMap != null && plMap.isBoss) {
                                     NpcService.gI().createMenuConMeo(player, ConstNpc.IGNORE_MENU,
                                             -1, plMap.name + " (sức mạnh " + Util.numberToMoney(plMap.nPoint.power)
@@ -76,7 +76,7 @@ public class PVPService {
                 case 4:
                     switch (action) {
                         case OPEN_GOLD_SELECT:
-                            if (Client.gI().getPlayer(playerId) == null) {
+                            if (plMap == null || plMap.isBot || Client.gI().getPlayer(playerId) == null) {
                                 Service.gI().sendThongBao(player, "Đối thủ đã thoát game");
                                 return;
                             }
@@ -95,6 +95,10 @@ public class PVPService {
 
     private void openSelectGold(Player pl, Player plMap) {
         if (pl == null || plMap == null) {
+            return;
+        }
+        if (plMap.isBot) {
+            Service.gI().sendThongBao(pl, "Không thể thách đấu");
             return;
         }
         if (pl.pvp != null || plMap.pvp != null) {
@@ -159,7 +163,7 @@ public class PVPService {
         if (pl == null) {
             return;
         }
-        if (plMap == null) {
+        if (plMap == null || plMap.isBot) {
             Service.gI().sendThongBao(pl, "Đối thủ đã rời map");
             return;
         }

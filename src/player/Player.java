@@ -139,6 +139,9 @@ public class Player implements Runnable {
     public boolean isNewPet1;
     public boolean isBoss;
     public boolean isPlayer;
+    public boolean isBot;
+    // 0: chỉ đi dạo + chat, 1: chủ động săn mob
+    public byte botMode = 1;
     public IPVP pvp;
     public byte maxTime = 30;
     public byte type = 0;
@@ -200,6 +203,10 @@ public class Player implements Runnable {
     public long lastTimePKDHVT23;
     public boolean lostByDeath;
     public boolean isPKDHVT;
+    // Bot custom outfit
+    public short botHead = -1;
+    public short botBody = -1;
+    public short botLeg = -1;
     public int xSend;
     public int ySend;
     public boolean isFly;
@@ -334,7 +341,7 @@ public class Player implements Runnable {
     @Override
     public void run() {
         Functions.sleep(500);
-        while (!Maintenance.isRunning && session != null && session.isConnected() && this.name != null) {
+        while (!Maintenance.isRunning && this.name != null && ((this.session != null && this.session.isConnected()) || this.isBot)) {
             long st = System.currentTimeMillis();
             update();
             long time = 1000 - (System.currentTimeMillis() - st);
@@ -351,6 +358,10 @@ public class Player implements Runnable {
     public void update() {
         if (!this.beforeDispose) {
             try {
+                if (this.isBot) {
+                    updateBot();
+                    return;
+                }
                 if (this.zone != null || (!this.isPl() && this.zone == null)) {
                     if (itemTime != null) {
                         itemTime.update();
@@ -531,6 +542,180 @@ public class Player implements Runnable {
                 Logger.logException(Player.class, e, "Lỗi tại player: " + this.name);
             }
         }
+    }
+
+    // --- BOT AI (tối ưu) ---
+    private static final String[] BOT_CHAT_MESSAGES = new String[]{
+       "Đi săn quái thôi!", "Vào map khác đi!", "Có boss chưa?",
+        "Nhặt đậu thần đi!", "Solo không?", "Ai kéo hộ với?",
+        "Train nhanh nào!", "Đang lag quá!", "Qua khu 5 nhé!",
+        "AFK tí nha!", "KS vừa thôi!", "Đổi map không?",
+        "Có ai buff không?", "Làm nhiệm vụ nè!", "Có slot tổ đội không?",
+        "Đi săn rồng đen không?", "Sắp hết đậu rồi!", "Ai qua đảo Kame chưa?",
+        "Đừng bỏ team nha!", "Boss sắp ra kìa!", "Tham gia bang không?",
+        "Đi PVP không?", "Nạp đậu chưa?", "Ai còn vé gọi rồng?",
+        "Train sức mạnh nào!", "Săn pet thôi!", "Nhường bãi cho newbie!",
+        "GL không? muốn trao acc xd cao quá!", "Có ai cần giao dịch không?",
+        "Trả lại đồ bị nhặt nhầm", "GL gấp ae!",
+        "ACC XD 50tỷ ai đổi không?", "GL vs GD nóng đây!",
+        "ACC lv thấp muốn giao diện đẹp", "Ai mua đá hiếm không?",
+        "Lag quá trời, chịu không nổi!", "Đi map Namek share exp!",
+        "Xin cầu hỗ trợ lvl", "Cần người kéo boss Freeza!",
+        "Shop nào rẻ bán đá số lượng lớn?", "GL qua nao?",
+        "Dùng gl off, gl fb nha!", "Đổi acc xd 30tỷ lấy XD 40tỷ?",
+        "GL khu 5/7 ít đông", "Có ai dùng nút auto chưa?",
+        "Farm ngọc rồng số lượng nhiều!", "HS chạy chậm quá!",
+        "Trade đồ giá hời ai qua xem!","Đi train không ae?","Xin slot train với!","Qua khu khác nhé?","Khu này đông quá!","Đừng KS nha bạn!","Buff hộ chí mạng với!","Có boss chưa mn?","Săn boss giờ mấy vậy?","Fix lag chưa nhỉ?","AFK xíu quay lại!","Vào bang với được không?","Bang còn tuyển không?","Tạo party đi mọi người!","Solo map này không?","Đổi map Trái Đất nhé?","Qua Namek không ae?","Lên Xayda farm nè!","Yardrat có gì hot?","Về đảo Kame nghỉ tí!","Đang săn sao đen!","Ai có vé gọi rồng?","Mở rồng giờ nào thế?","Ai kéo đệ giúp với!","Đệ yếu quá, xin kéo!","Nhặt capsule hộ mình!","Rớt đồ xịn nè!","Thả rồng không ae?","Cẩn thận bẫy nhé!","Đừng đứng chồng hit!","Ghép đội săn boss!","Có ông nào bán đá không?","Mua bông tai nè!","Trade uy tín không?","Shop nào rẻ chỉ với!","Nạp ở đâu an toàn?","Đủ ki chưa? buff đi!","Hồi lực rồi, lên!","Hết đậu rồi…","Đổi khu 5/7 nhé!","Khu full rồi mn ơi!","Lag do máy hay server?","Đang làm nhiệm vụ!","Train cấp cho lẹ!","Đi giải đấu không?","PVP giao lưu không?","Đừng công kích bang nhé!","Bang war khu mấy?","Boss sắp ra, gom lại!","Tập trung góc phải!","Giãn map ra nha!","Đứng xa cho đỡ dính!","Thiếu tanker kìa!","Compo đủ chưa?","Có ai cần heal không?","Hết x3 rồi buồn…","Farm nhẹ nhàng thôi!","Vào hang nào trước?","Ai có tọa độ boss?","Map này ít quái quá!","Qua bãi 20-30 nhé!","Bãi 40-50 còn chỗ?","Kéo tầm 10p nhé!","Hết giờ buff rồi!","Đổi sang khu vắng!","Săn pet đệ luôn không?","Nhờ nhặt giúp mảnh!","Đồ này có khóa không?","Mở rương đi chứ?","Có ai share build không?","Dùng combo nào mạnh?","Nâng ngọc thế nào nhỉ?","Chỉ số này ổn chưa?","Cần mấy mảnh nữa?","Up sức mạnh nhanh không?","Đi nhiệm vụ bang nè!","Đi sự kiện tuần nhé!","Đổi server test không?","Ai on voice không?","Lên top lực chiến nào!","Check BXH xem!","Đừng spam chat nha!","Mod có on không?","Bug gì đó kìa!","Gửi báo lỗi ở đâu?","Ai về nhà chưa mn?","Đứng ngắm cảnh tí!","Chụp ảnh kỷ niệm nè!","Thả tim cho đội nào!","Chạy bo đi các sư huynh!","Đến Capsule Corp không?","Gặp Kame sennin chưa?","Khỉ đột ở đâu vậy?","Đang nạp ki như Goku!","Kakarot mode on!","Namek xanh mát thật!","Xayda gắt quá trời!","Đổi giáp chưa bạn?","Áo giáp mỏng quá…","Đừng dí boss ra xa!","Giữ aggro hộ!","Lure bầy quái lại!","Clear rìa map trước!","Đợi hồi chiêu đã!","Xong nhiệm vụ rồi!","Đi tiếp map kế nhé!","GG wp ae!","Chúc mn may mắn rớt đồ!","Hẹn gặp lại khu khác!","Vào lại sau bảo trì!","Up thêm vài cấp rồi ngủ!","Good night mọi người!","Chào buổi sáng ae!","Online đông vui phết!","Đi event Trung Thu không?","Đổi quà sự kiện nha!","Nhận code đâu thế?","Nhập giftcode rồi nhé!","Cảm ơn đã kéo với!","Xin lỗi lỡ tay KS!","Thông cảm mới chơi!","Chỉ mình cách build với!","Đổi khu 1 test dmg!","Xếp đội hình như này nhé!","Đợi boss hồi sinh!","Ai còn vé TD nữa không?","Bông tai còn không?","Cần 999 mảnh nữa… haizz!","Farm tiếp thôi ae!","Rớt cầu vồng rồi trời!","Nổ chí mạng sướng thật!","Không trúng đồ, cay!","Đổi server đỡ lag!","Ping cao quá mn ơi!","Chat kênh bang nhé!","Kênh thế giới ồn quá!","Kênh khu cho đỡ loạn!","Mute bớt đi nha!","Nhắn tin riêng nhé!","Đang bận tay, rep sau!","Share tọa độ chuẩn đi!","Boss lệch giờ kìa!","Nhường bãi cho newbie!","Tuyển tân thủ vào bang!","Bang hỗ trợ đồ tân thủ!","Đặt thuế bang mấy %?","Đóng góp bang hôm nay!","Check kho bang giúp!","Chia đồ công bằng nha!","Đua top tuần này!","Cố lên, gần top rồi!","Đủ set chưa ae?","Chốt mục tiêu map này!","Nhanh nào, sắp hết giờ!"
+
+
+
+    };
+    private static final int BOT_RETARGET_MS = 1000;      // chu kỳ tìm mục tiêu
+    private static final int BOT_ATTACK_MS = 200;          // chu kỳ tấn công
+    private static final int BOT_IDLE_MOVE_MS = 2000;      // chu kỳ đi dạo
+    private static final int BOT_CHAT_MS = 10000;          // chu kỳ chat
+    private static final int BOT_CHAT_MIN_MS = 20000;      // chat ngẫu nhiên: min
+    private static final int BOT_CHAT_MAX_MS = 45000;      // chat ngẫu nhiên: max
+
+    private long lastTimeAttackBot;
+    private long lastTimeRetarget;
+    private mob.Mob mobTargetBot;
+    private long lastTimeBotChat;
+    private long nextBotChatAt;
+    private long lastTimeBotIdleMove;
+
+    private void updateBot() {
+        if (this.zone == null) return;
+        if (this.isDie()) {
+            Service.gI().hsChar(this, nPoint.hpMax, nPoint.mpMax);
+            return;
+        }
+        // Nếu là bot "đứng im/chat" thì bỏ qua logic đánh
+        if (this.botMode == 0) {
+            // idle walk rất nhẹ nhàng
+            if (Util.canDoWithTime(lastTimeBotIdleMove, BOT_IDLE_MOVE_MS)) {
+                int toX = this.location.x + Util.nextInt(-60, 60);
+                if (toX < 24) toX = 24;
+                if (this.zone != null && this.zone.map != null && toX > this.zone.map.mapWidth - 24) {
+                    toX = this.zone.map.mapWidth - 24;
+                }
+                int toY = this.location.y;
+                if (this.zone != null && this.zone.map != null) {
+                    toY = this.zone.map.yPhysicInTop(toX, Math.max(24, this.location.y));
+                }
+                PlayerService.gI().playerMove(this, toX, toY);
+                lastTimeBotIdleMove = System.currentTimeMillis();
+            }
+            long now = System.currentTimeMillis();
+            if (nextBotChatAt == 0) nextBotChatAt = now + Util.nextInt(BOT_CHAT_MIN_MS, BOT_CHAT_MAX_MS);
+            if (now >= nextBotChatAt) {
+                Service.gI().chat(this, BOT_CHAT_MESSAGES[Util.nextInt(BOT_CHAT_MESSAGES.length)]);
+                lastTimeBotChat = now;
+                nextBotChatAt = now + Util.nextInt(BOT_CHAT_MIN_MS, BOT_CHAT_MAX_MS);
+            }
+            return;
+        }
+
+        if (Util.canDoWithTime(lastTimeRetarget, BOT_RETARGET_MS)) {
+            lastTimeRetarget = System.currentTimeMillis();
+            if (mobTargetBot == null || mobTargetBot.isDie()) {
+                mobTargetBot = getNearestAliveMob();
+            }
+        }
+        if (!Util.canDoWithTime(lastTimeAttackBot, BOT_ATTACK_MS)) return;
+        lastTimeAttackBot = System.currentTimeMillis();
+        if (mobTargetBot == null) {
+            // không có mob: di chuyển nhàn rỗi quanh vị trí hiện tại
+            if (Util.canDoWithTime(lastTimeBotIdleMove, BOT_IDLE_MOVE_MS)) {
+                int toX = this.location.x + Util.nextInt(-120, 120);
+                if (toX < 24) toX = 24;
+                if (this.zone != null && this.zone.map != null && toX > this.zone.map.mapWidth - 24) {
+                    toX = this.zone.map.mapWidth - 24;
+                }
+                int toY = this.location.y;
+                if (this.zone != null && this.zone.map != null) {
+                    toY = this.zone.map.yPhysicInTop(toX, Math.max(24, this.location.y));
+                }
+                PlayerService.gI().playerMove(this, toX, toY);
+                lastTimeBotIdleMove = System.currentTimeMillis();
+            }
+            // vẫn chạy chat định kỳ bên dưới
+        } else {
+        ensureSelectAnySkill();
+        int dx = this.location.x - mobTargetBot.location.x;
+        int dy = this.location.y - mobTargetBot.location.y;
+        int dist2 = dx * dx + dy * dy;
+        // nếu mục tiêu quá xa, tìm mục tiêu khác gần hơn
+        if (dist2 > 600 * 600) {
+            mobTargetBot = getNearestAliveMob();
+            if (mobTargetBot == null) return;
+            dx = this.location.x - mobTargetBot.location.x;
+            dy = this.location.y - mobTargetBot.location.y;
+            dist2 = dx * dx + dy * dy;
+        }
+        int idealMin = 100; // khoảng cách tối thiểu mong muốn
+        int idealMax = 160; // khoảng cách tối đa mong muốn
+        int range = 140; // phạm vi sử dụng skill
+        // chỉ tấn công khi đang trong tầm
+        if (dist2 <= range * range && this.playerSkill != null && this.playerSkill.skillSelect != null && dist2 >= idealMin * idealMin) {
+            // gọi trực tiếp tấn công để tránh các điều kiện từ luồng client
+            SkillService.gI().useSkillAttack(this, null, mobTargetBot);
+        } else {
+            int toX;
+            // nếu quá gần, lùi ra một chút để giữ khoảng cách chiến đấu
+            if (dist2 < idealMin * idealMin) {
+                int dir = (this.location.x <= mobTargetBot.location.x) ? -1 : 1;
+                toX = this.location.x + dir * Util.nextInt(25, 45);
+            } else {
+                // quá xa: tiến gần với chút lệch ngang để trông tự nhiên
+                toX = mobTargetBot.location.x + Util.nextInt(-20, 20);
+            }
+            int toY = this.zone != null && this.zone.map != null
+                    ? this.zone.map.yPhysicInTop(toX, Math.max(24, mobTargetBot.location.y))
+                    : mobTargetBot.location.y;
+            PlayerService.gI().playerMove(this, toX, toY);
+        }
+        }
+        // chat định kỳ ngẫu nhiên
+        long now = System.currentTimeMillis();
+        if (nextBotChatAt == 0) nextBotChatAt = now + Util.nextInt(BOT_CHAT_MIN_MS, BOT_CHAT_MAX_MS);
+        if (now >= nextBotChatAt) {
+            Service.gI().chat(this, BOT_CHAT_MESSAGES[Util.nextInt(BOT_CHAT_MESSAGES.length)]);
+            lastTimeBotChat = now;
+            nextBotChatAt = now + Util.nextInt(BOT_CHAT_MIN_MS, BOT_CHAT_MAX_MS);
+        }
+    }
+
+    private void ensureSelectAnySkill() {
+        if (this.playerSkill == null) return;
+        if (this.playerSkill.skillSelect != null && this.playerSkill.skillSelect.skillId != -1) return;
+        for (skill.Skill s : this.playerSkill.skills) {
+            if (s != null && s.skillId != -1) { this.playerSkill.skillSelect = s; break; }
+        }
+    }
+
+    private mob.Mob getRandomAliveMob() {
+        if (this.zone == null || this.zone.mobs.isEmpty()) return null;
+        for (int i = 0; i < this.zone.mobs.size(); i++) {
+            mob.Mob m = this.zone.mobs.get(Util.nextInt(this.zone.mobs.size()));
+            if (m != null && !m.isDie()) return m;
+        }
+        return null;
+    }
+
+    private mob.Mob getNearestAliveMob() {
+        if (this.zone == null || this.zone.mobs.isEmpty()) return null;
+        mob.Mob best = null;
+        int bestDist = Integer.MAX_VALUE;
+        for (int i = 0; i < this.zone.mobs.size(); i++) {
+            mob.Mob m = this.zone.mobs.get(i);
+            if (m == null || m.isDie()) continue;
+            int dx = this.location.x - m.location.x;
+            int dy = this.location.y - m.location.y;
+            int d2 = dx * dx + dy * dy;
+            if (d2 < bestDist) { bestDist = d2; best = m; }
+        }
+        return best;
     }
 
     public long lastTimeSendTextTime;
@@ -961,6 +1146,9 @@ public class Player implements Runnable {
     }
 
     public short getHead() {
+        if (this.isBot && this.botHead != -1) {
+            return this.botHead;
+        }
         if (this.isPl() && this.pet != null && this.fusion.typeFusion == ConstPlayer.HOP_THE_PORATA || this.fusion.typeFusion == ConstPlayer.HOP_THE_PORATA2) {
             Item item = inventory.itemsBody.get(5);
             Item petItem = pet.inventory.itemsBody.get(5);
@@ -1019,6 +1207,9 @@ public class Player implements Runnable {
     }
 
     public short getBody() {
+        if (this.isBot && this.botBody != -1) {
+            return this.botBody;
+        }
         if (this.isPl() && this.pet != null && this.fusion.typeFusion == ConstPlayer.HOP_THE_PORATA || this.fusion.typeFusion == ConstPlayer.HOP_THE_PORATA2) {
             Item item = inventory.itemsBody.get(5);
             Item petItem = pet.inventory.itemsBody.get(5);
@@ -1073,6 +1264,9 @@ public class Player implements Runnable {
     }
 
     public short getLeg() {
+        if (this.isBot && this.botLeg != -1) {
+            return this.botLeg;
+        }
         if (this.isPl() && this.pet != null && this.fusion.typeFusion == ConstPlayer.HOP_THE_PORATA || this.fusion.typeFusion == ConstPlayer.HOP_THE_PORATA2) {
             Item item = inventory.itemsBody.get(5);
             Item petItem = pet.inventory.itemsBody.get(5);

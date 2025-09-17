@@ -350,6 +350,11 @@ public class Service {
     }
 
     public void regisAccount(Session session, Message _msg) {
+        // TẮT ĐĂNG KÝ TÀI KHOẢN
+        sendThongBaoOK((MySession) session, "Vui lòng đăng ký tài khoản tại trang chủ!");
+        return;
+        
+        /* CODE CŨ ĐÃ BỊ VÔ HIỆU HÓA
         try {
             _msg.readUTF();
             _msg.readUTF();
@@ -391,6 +396,7 @@ public class Service {
             e.printStackTrace();
             sendThongBaoOK((MySession) session, "Đã xảy ra lỗi bất ngờ vui lòng thử lại sau!");
         }
+        */
     }
 
     public void Send_Info_NV(Player pl) {

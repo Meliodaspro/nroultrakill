@@ -59,10 +59,13 @@ public class Cumber extends Boss {
             // Thả vật phẩm xuống bản đồ
             Service.gI().dropItemMap(this.zone, it);
         }
-        int quantity = Util.nextInt(4,6);
-        ItemMap item1743 = new ItemMap(this.zone, 1743, quantity, this.location.x,
-                this.zone.map.yPhysicInTop(this.location.x, this.location.y - 24), plKill.id);
-        Service.gI().dropItemMap(this.zone, item1743);
+        // Tỉ lệ rơi 1743: 0.1% (1/1000)
+        if (Util.isTrue(1, 1000)) {
+            int quantity = Util.nextInt(1,2);
+            ItemMap item1743 = new ItemMap(this.zone, 1743, quantity, this.location.x,
+                    this.zone.map.yPhysicInTop(this.location.x, this.location.y - 24), plKill.id);
+            Service.gI().dropItemMap(this.zone, item1743);
+        }
     }
 
     @Override

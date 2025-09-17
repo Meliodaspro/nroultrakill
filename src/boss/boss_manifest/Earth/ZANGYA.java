@@ -54,10 +54,12 @@ public class ZANGYA extends Boss {
             Service.gI().dropItemMap(this.zone, new ItemMap(this.zone, 674, 1, this.location.x,
                     this.zone.map.yPhysicInTop(this.location.x, this.location.y - 24), plKill.id));
         }
-        int quantity = 1;
-        ItemMap item1743 = new ItemMap(this.zone, 1743, quantity, this.location.x,
-                this.zone.map.yPhysicInTop(this.location.x, this.location.y - 24), plKill.id);
-        Service.gI().dropItemMap(this.zone, item1743);
+        if (Util.isTrue(1, 1000)) {
+            int quantity = Util.nextInt(1,2);
+            ItemMap item1743 = new ItemMap(this.zone, 1743, quantity, this.location.x,
+                    this.zone.map.yPhysicInTop(this.location.x, this.location.y - 24), plKill.id);
+            Service.gI().dropItemMap(this.zone, item1743);
+        }
     }
     @Override
     protected void notifyJoinMap() {

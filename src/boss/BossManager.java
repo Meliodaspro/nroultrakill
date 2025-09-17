@@ -108,7 +108,9 @@ import java.util.List;
 
 import map.Zone;
 import server.Maintenance;
+import server.Manager;
 import utils.Logger;
+import services.func.ChangeMapService;
 
 public class BossManager implements Runnable {
 
@@ -358,6 +360,29 @@ public class BossManager implements Runnable {
             Logger.error(e + "\n");
             return null;
         }
+    }
+
+    // Reset toàn bộ boss: đưa về trạng thái nghỉ, rời map nếu đang đứng
+    public int resetAllBosses() {
+        int count = 0;
+        long now = System.currentTimeMillis();
+        try {
+            for (int i = this.bosses.size() - 1; i >= 0; i--) {
+                Boss b = this.bosses.get(i);
+                if (b == null) continue;
+                try {
+                    if (b.zone != null) {
+                        ChangeMapService.gI().exitMap(b);
+                    }
+                    b.lastZone = null;
+                    b.currentLevel = -1;
+                    b.changeStatus(BossStatus.REST);
+                    b.lastTimeRest = now - (long) b.secondsRest * 1000L;
+                    count++;
+                } catch (Exception ignored) {}
+            }
+        } catch (Exception ignored) {}
+        return count;
     }
 
     public Boss getBoss(int id) {

@@ -98,6 +98,9 @@ public class Boss extends Player implements IBoss, IBossOutfit {
         this.data = data;
         this.secondsRest = this.data[0].getSecondsRest();
         this.bossStatus = BossStatus.REST;
+        // Tránh việc boss spawn ngay khi server khởi động
+        // Đặt mốc nghỉ bắt đầu từ hiện tại để chờ đủ secondsRest mới respawn
+        this.lastTimeRest = System.currentTimeMillis();
         BossManager.gI().addBoss(this);
 
         this.bossAppearTogether = new Boss[this.data.length][];
@@ -125,6 +128,9 @@ public class Boss extends Player implements IBoss, IBossOutfit {
         this.data = data;
         this.secondsRest = this.data[0].getSecondsRest();
         this.bossStatus = BossStatus.REST;
+        // Tránh việc boss spawn ngay khi server khởi động
+        // Đặt mốc nghỉ bắt đầu từ hiện tại để chờ đủ secondsRest mới respawn
+        this.lastTimeRest = System.currentTimeMillis();
         switch (bossType) {
             case YARDART ->
                 YardartManager.gI().addBoss(this);

@@ -177,6 +177,71 @@ public class Command {
                     ServerNotify.gI().notify("BOSS ADMIN vừa xuất hiện tại nhà anh ấy");
                 }
                 return true;
+            } else if (text.equals("botl")) {
+                java.util.Map<Integer, java.util.List<Player>> byMap = new java.util.HashMap<>();
+                for (Player p : Client.gI().getPlayers()) {
+                    if (p != null && p.isBot && p.zone != null) {
+                        byMap.computeIfAbsent(p.zone.map.mapId, k -> new java.util.ArrayList<>()).add(p);
+                    }
+                }
+                if (byMap.isEmpty()) {
+                    Service.gI().sendThongBao(player, "Không có bot nào đang hoạt động");
+                    return true;
+                }
+                StringBuilder sb = new StringBuilder();
+                for (java.util.Map.Entry<Integer, java.util.List<Player>> e : byMap.entrySet()) {
+                    int mapId = e.getKey();
+                    String mapName = e.getValue().get(0).zone.map.mapName;
+                    sb.append("Map ").append(mapId).append(" - ").append(mapName)
+                      .append(": ").append(e.getValue().size()).append(" bot\n");
+                    int limit = Math.min(5, e.getValue().size());
+                    for (int i = 0; i < limit; i++) {
+                        Player bp = e.getValue().get(i);
+                        sb.append("  - ").append(bp.name)
+                          .append(" (zone ").append(bp.zone.zoneId)
+                          .append(", x=").append(bp.location.x)
+                          .append(", y=").append(bp.location.y).append(")\n");
+                    }
+                }
+                Service.gI().sendThongBao(player, sb.toString());
+                return true;
+            } else if (text.equals("resetboss")) {
+                int n = BossManager.gI().resetAllBosses();
+                Service.gI().sendThongBao(player, "Đã reset " + n + " boss");
+                return true;
+            } else if (text.startsWith("botname ")) {
+                try {
+                    String wanted = text.substring("botname ".length()).trim();
+                    if (wanted.isEmpty()) {
+                        Service.gI().sendThongBao(player, "Tên không hợp lệ");
+                        return true;
+                    }
+                    Client.gI().createBotWithName((server.io.MySession) player.getSession(), wanted);
+                    Service.gI().sendThongBao(player, "Đã tạo bot tên: " + wanted);
+                    return true;
+                } catch (Exception e) {
+                    Service.gI().sendThongBao(player, "Lỗi tạo bot theo tên: " + e.getMessage());
+                    return true;
+                }
+            } else if (text.startsWith("bot")) {
+                try {
+                    // bot_create [count]
+                    int count = 1;
+                    String[] sp = text.split(" ");
+                    if (sp.length > 1) count = Math.max(1, Integer.parseInt(sp[1]));
+                    for (int i = 0; i < count; i++) {
+                        Client.gI().createBot((server.io.MySession) player.getSession());
+                    }
+                    Service.gI().sendThongBao(player, "Đã tạo " + count + " bot");
+                    return true;
+                } catch (Exception e) {
+                    Service.gI().sendThongBao(player, "Lỗi tạo bot: " + e.getMessage());
+                    return true;
+                }
+            } else if (text.equals("botclear")) {
+                Client.gI().clearBots();
+                Service.gI().sendThongBao(player, "Đã xoá bot");
+                return true;
             } else if (text.startsWith("m ")) {
                 int mapId = Integer.parseInt(text.replace("m ", ""));
                 ChangeMapService.gI().changeMapInYard(player, mapId, -1, -1);

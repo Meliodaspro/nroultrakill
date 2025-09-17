@@ -58,6 +58,7 @@ public class Zone {
     private final List<Player> players; //player
     private final List<Player> bosses; //boss
     private final List<Player> pets; //pet
+    private final List<Player> bots; //bot player (không tạo thread riêng)
 
     public final List<Mob> mobs;
     public final List<ItemMap> items;
@@ -170,6 +171,25 @@ public class Zone {
         }
     }
 
+    // gom update bot theo khu để giảm số thread
+    private void udBots() {
+        if (this.bots.isEmpty()) {
+            return;
+        }
+        try {
+            for (int i = this.bots.size() - 1; i >= 0; i--) {
+                if (i < this.bots.size()) {
+                    Player pl = this.bots.get(i);
+                    if (pl != null && pl.zone != null) {
+                        pl.update();
+                    }
+                }
+            }
+        } catch (Exception e) {
+            Logger.logException(Zone.class, e, "Lỗi update bots");
+        }
+    }
+
     private void udItem() {
         if (this.items.isEmpty()) {
             return;
@@ -200,6 +220,7 @@ public class Zone {
         udMob();
         udItem();
         udNonInteractiveNPC();
+        udBots();
         updateZoneTranhNgoc();
     }
 
@@ -219,9 +240,15 @@ public class Zone {
         this.maBuHolds = new ArrayList<>();
         this.playersRed = new ArrayList<>();
         this.playersBlue = new ArrayList<>();
+        this.bots = new ArrayList<>();
     }
 
     public int getNumOfPlayers() {
+        // Hiển thị số người trong khu bao gồm cả bot để UI phản ánh đúng
+        return this.players.size() + this.bots.size();
+    }
+
+    public int getNumOfRealPlayers() {
         return this.players.size();
     }
 
@@ -268,16 +295,19 @@ public class Zone {
                 this.noninteractivenpcs.add(player);
             }
 
-            if (!player.isBoss && !this.notBosses.contains(player) && !player.isNewPet && !(player instanceof NonInteractiveNPC)) {
+            if (!player.isBoss && !player.isBot && !this.notBosses.contains(player) && !player.isNewPet && !(player instanceof NonInteractiveNPC)) {
                 this.notBosses.add(player);
             }
 
-            if (!player.isBoss && !player.isNewPet && !player.isPet && !this.players.contains(player) && !(player instanceof NonInteractiveNPC)) {
+            if (!player.isBoss && !player.isBot && !player.isNewPet && !player.isPet && !this.players.contains(player) && !(player instanceof NonInteractiveNPC)) {
                 this.players.add(player);
             }
 
             if (player.isBoss) {
                 this.bosses.add(player);
+            }
+            if (player.isBot) {
+                this.bots.add(player);
             }
             if (player.isPet || player.isNewPet) {
                 this.pets.add(player);
@@ -292,6 +322,7 @@ public class Zone {
         this.notBosses.remove(player);
         this.players.remove(player);
         this.bosses.remove(player);
+        this.bots.remove(player);
         this.pets.remove(player);
     }
 

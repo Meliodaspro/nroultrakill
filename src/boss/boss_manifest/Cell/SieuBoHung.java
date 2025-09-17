@@ -130,11 +130,14 @@ public class SieuBoHung extends Boss {
                     plKill.id);
             Service.gI().dropItemMap(this.zone, item);
         }
-//        sự kiện
+//        sự kiện 0.1%
+        if (Util.isTrue(1, 1000)) {
         int quantity = Util.nextInt(3, 5); // Sinh số ngẫu nhiên từ 3 đến 5
         ItemMap item1743 = new ItemMap(this.zone, 1743, quantity, this.location.x,
                 this.zone.map.yPhysicInTop(this.location.x, this.location.y - 24), plKill.id);
+            Service.gI().dropItemMap(this.zone, item1743);
         Service.gI().dropItemMap(this.zone, item1743);
+        }
     }
 
 

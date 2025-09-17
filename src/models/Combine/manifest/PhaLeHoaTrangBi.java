@@ -17,19 +17,19 @@ public class PhaLeHoaTrangBi {
             case 0 ->
                 100;
             case 1 ->
-                50;
+                80;
             case 2 ->
-                30;
+                60;
             case 3 ->
-                10;
+                40;
             case 4 ->
-                5;
+                20;
             case 5 ->
-                3;
+                10;
             case 6 ->
-                2;
+                5;
             case 7 ->
-                0.5f;
+                3;
             case 8 ->
                 0.9f;
             default ->
